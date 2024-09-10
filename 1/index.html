@@ -4,83 +4,395 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 40px;
-            line-height: 1.6;
+            font-family: 'Poppins', sans-serif; 
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef); /* Gradient background */
         }
-        h1, h2, h3 {
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
             color: #333;
         }
-        h1 {
-            text-align: center;
-        }
-        img {
-            display: block;
-            margin: 20px auto;
-            max-width: 80%;
-        }
-        .author {
-            text-align: center;
-            font-size: 1.2em;
-            font-style: italic;
-            margin-bottom: 40px;
+        p, ol {
+            color: #555;
+            line-height: 1.6;
         }
         .section {
             margin-bottom: 40px;
         }
-        .code {
-            background-color: #f4f4f4;
-            border-left: 4px solid #333;
+        .section h2 {
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .section p {
+            margin: 10px 0;
+        }
+        .section b{
+            font-size: 19px;
+            display: block;
+            text-align: center;
+            padding:20px;
+        }
+        ol li {
+            margin-bottom: 10px;
+        }
+        .image-placeholder {
+            text-align: center;
+            padding: 0px;
+        }
+        .result-images {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .image-placeholder {
+            width: 45%; 
+            margin-bottom: 20px;
+            text-align: center;
+            background-color: #f9f9f9; 
             padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            transition: transform 0.3s ease; 
+
+        }
+        .image-placeholder-center{
+            background-color: #f9f9f9; 
+            padding: 10px;
+            border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+            transition: transform 0.3s ease; 
+        }
+        .image-placeholder-center img{
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            max-width: 100%; 
+            height: auto;
+        }
+        .result-images img {
+            width: 100%;
+            height: auto;
+        }
+        .result-images p {
+            width: 100%;
+            text-align: center;
+            font-size: large;
+        }
+        .image-placeholder:hover {
+            transform: scale(1.05); /* Slight zoom on hover */
         }
     </style>
 </head>
 <body>
-    <h1>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</h1>
-    <div class="author">
-        Written by <strong>Aaron Zheng</strong>
+
+<div class="container">
+    <div class="title">
+        <h1>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</h1>
+        <p><strong>Written by Aaron Zheng</strong></p>
     </div>
 
-    <div class="section" id="overview">
+    <div class="section">
         <h2>Overview</h2>
-        <p>The goal of this project is to align images representing the blue, green, and red color channels into one image, and solve the problem of aligning these images in the most pleasing way for the viewer.</p>
-        <p>This project is very meaningful because it solves a very important problem from the past: the inability to take color pictures using regular cameras, instead only allowing black and white. About 100 years ago, a Russian color photography pioneer named Sergei Mikhailovich Prokudin-Gorskii solved this problem by taking 3 black and white images using a red, green, and blue filter respectively. He hoped to align these images using projectors installed with different color filters, but he wasn’t able to find a solution with the technology of his time.</p>
-        <p>Now, with my Computer Vision knowledge, I can assist Sergei in reconstructing his images through this project.</p>
+        <p>
+            The goal of this project is to align images representing the blue, green, and red color channels into one image,
+            solving the problem of aligning these images in the most pleasing way for the viewer.
+        </p>
+        <p>
+            This project is very meaningful because it solves a very important problem in the past, which is the inability to take
+            color pictures using regular cameras, instead only allowing black and white. 100 years ago, a Russian color photography pioneer
+            named Sergei Mikhailovich Prokudin-Gorskii solved this problem by taking 3 black and white images using a red, green, and blue
+            filter respectively. He'd hoped of ways to align these images using projectors installed with different color filters, but he
+            wasn't able to find a solution during his time of much limited technology. Now, with my Computer Vision knowledge, I am able to
+            assist in Sergei, helping him reconstruct his images through this project.
+        </p>
     </div>
 
-    <div class="section" id="first-attempts">
+    <div class="section">
         <h2>First Attempts</h2>
-        <p>In my first attempt, I created a very unaligned image, as I was simply reading the red, green, and blue intensities from the provided image and directly combining them.</p>
-        <img src="first_image.jpg" alt="First unaligned image">
-        <p>After that, I realized I had to perform simple scaling, and the main problem was solving the misalignment. I wrote a simple scaling function to align the smaller images.</p>
-        <p>I began by writing evaluation functions (NCC and L2) to measure the similarity of images as one image shifts along a search window. Major bugs I fixed included cropping issues and confusion about whether to maximize or minimize L2 and NCC scores.</p>
-        <p>Results for <code>monastery.jpg</code> and <code>melons.tif</code> are included below.</p>
+        <p>
+            The first attempt, I created a very unaligned image, as I was looking at just simply reading the red, green, and blue intensities
+            from the provided image, and directly combining them.
+        </p>
+        <b>Unaligned Image</b>
+        <div class="image-placeholder-center">
+            
+            <img src="media/first_image.jpg" alt="First Image description">
+        </div>
+        <p>
+            Then after that I realized that I had to do simple scaling, and the fundamental problem was to solve the misalignment. This led me
+            to write a simple scaling function, which managed to align the smaller images.
+        </p>
+        <p>
+            I first started by writing the metric (evaluation) functions, which will evaluate the similarity of images as one of those images
+            is being shifted along a search window (NCC and L2). Major bugs I fixed was forgetting about cropping (which lead to very problematic
+            images for the monastery.jpg), as well as confusing whether to maximize or minimize L2 and NCC scores.
+        </p>
+        <p>
+            Then, after that, I tried to use the naive method on the "melons.tif" image, trying to align that image. With a modest search window
+            of [-15, 15] for both the height and width dimension, the code did not finish running even after 10 minutes, which made me realize
+            that this is not a good approach.
+        </p>
     </div>
 
-    <div class="section" id="intermediate-steps">
+    <div class="section">
         <h2>Intermediate Steps</h2>
-        <p>The slow run times were due to the size of the image <code>melon.tif</code> (around 3000x3000), compared to the smaller images (around 300x300). To solve this, I implemented an image pyramid approach.</p>
-        <p>I built arrays of scaled images, and starting from the smallest scale, I aligned each pair of images by progressively shifting and refining the alignment at each level. This gave me the final aligned color image.</p>
-        <p>Some major bugs I fixed included:</p>
-        <ul>
-            <li>Accidentally multiplying the final shift by 2, leading to misaligned images.</li>
-            <li>Switching to aligning red and blue images relative to the green image, resulting in much better results, especially for <code>emir.tif</code>.</li>
-        </ul>
+        <p>
+            I realized that the reason for such slow running times is due to how big the "melon.tif" image is, roughly 3000x3000, which is much
+            bigger than the smaller images, only around 300x300.
+        </p>
+        <p>
+            Hence, I began to build my image pyramid approach. I created 2 arrays of images, where the first item in the array is the original image,
+            and each following image is the previous image, scaled down by a factor of 2 on both the height and width axes. The last image is an image
+            with height that is within 80 pixels.
+        </p>
+        <p>
+            Then, starting from the smallest scaling (i.e., the last two images from these two arrays), we do the single-scale approach, find the pixel
+            shifting of the first image that leads to the best alignment using the approaches. Once this is done, we repeat this procedure with the
+            second-smallest scaling. Only this time, we pre-shift these images with the shift produced by the first (smallest) scaling, multiplied by 2.
+        </p>
+        <p>
+            Major bugs I fixed here were:
+        </p>
+        <ol>
+            <li>Accidentally multiplying the final (correct) shift for the first image by 2, leading to a very misaligned image.</li>
+            <li>Changing the alignment from the red image and green image aligned with the blue image, to the red image and blue image aligned with the green image.</li>
+            <li>For `train` image, I had to increase the `search_window` from 3 to 4 in order to align the image properly.</li>
+        </ol>
+        <p>
+            Since the red and blue are the least aligned images, and the green image seems to be between them, by aligning relative to the green image,
+            instead of the blue image, I was able to obtain much better results (especially for the "emir.tif" image).
+        </p>
     </div>
 
-    <div class="section" id="bells-whistles">
+    <div class="section">
         <h2>Bells And Whistles</h2>
-        <p>I implemented an automatic contrast scaling function that adjusts the intensity of the blue, green, and red channels so that the maximum intensity is 1.0 and the minimum is 0.0. This was done by subtracting the minimum intensity and scaling the images accordingly.</p>
+        <p>
+            For this section, I implemented an automatic contrast scaling function, which automatically scales blue, green, and red images such that the maximum
+            intensity is always 1.0 and the minimum intensity is always 0.0. I did this by subtracting the minimum intensity from the blue, green, and red images,
+            and scaling the images such that the maximum intensity in all three of the blue, green, and red images are all equal to 1.0.
+        </p>
+        <p>
+            This helped, as it significantly increased the contrast of the images, making them brighter and more apparent. However, this effect doesn't seem to be that
+            striking, or noticable in this case.
+        </p>
     </div>
 
-    <div class="section" id="results">
-        <h2>Results</h2>
-        <p>Here are my final results:</p>
-        <img src="result_image1.jpg" alt="Final aligned image 1">
-        <img src="result_image2.jpg" alt="Final aligned image 2">
+    <div class="section">
+        <h2>All Results</h2>
+        <p>Here are my results:</p>
+        <b>Harvesters</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/harvesters_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/harvesters_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Icon</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/icon_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/icon_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Lady</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/lady_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/lady_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Melons</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/melons_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/melons_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Monastery</b>
+        <div class="result-images">
+            <div class="image-placeholder">
+                <img src="media/monastery_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/monastery_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Onion Church</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/onion_church_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/onion_church_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Sculpture</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/sculpture_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/sculpture_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Self Portrait</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/self_portrait_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/self_portrait_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Three Generations</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/three_generation_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/three_generation_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Tobolsk</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/tobolsk_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/tobolsk_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Train</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/train_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/train_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Cathedral</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/cathedral_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/cathedral_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Church</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/church_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/church_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
+        <b>Emir</b>
+        <div class="result-images">
+            
+
+            <div class="image-placeholder">
+                <img src="media/emir_l2.jpg"/>
+                <p>L2</p>
+            </div>
+            <div class="image-placeholder">
+                <img src="media/emir_ncc.jpg"/>
+                <p>NCC</p>
+            </div>
+            <!-- Add more images as needed -->
+        </div>
     </div>
+</div>
+
 </body>
 </html>
