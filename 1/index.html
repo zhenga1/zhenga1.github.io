@@ -93,7 +93,6 @@
         .result-images p {
             width: 100%;
             text-align: center;
-            font-size: large;
         }
         .image-placeholder:hover {
             transform: scale(1.05); /* Slight zoom on hover */
@@ -114,6 +113,7 @@
             The goal of this project is to align images representing the blue, green, and red color channels into one image,
             solving the problem of aligning these images in the most pleasing way for the viewer.
         </p>
+        <br/>
         <p>
             This project is very meaningful because it solves a very important problem in the past, which is the inability to take
             color pictures using regular cameras, instead only allowing black and white. 100 years ago, a Russian color photography pioneer
@@ -130,20 +130,25 @@
             The first attempt, I created a very unaligned image, as I was looking at just simply reading the red, green, and blue intensities
             from the provided image, and directly combining them.
         </p>
+        <br/>
         <b>Unaligned Image</b>
+        <br/>
         <div class="image-placeholder-center">
             
             <img src="media/first_image.jpg" alt="First Image description">
         </div>
+        <br/>
         <p>
             Then after that I realized that I had to do simple scaling, and the fundamental problem was to solve the misalignment. This led me
             to write a simple scaling function, which managed to align the smaller images.
         </p>
+        <br/>
         <p>
             I first started by writing the metric (evaluation) functions, which will evaluate the similarity of images as one of those images
             is being shifted along a search window (NCC and L2). Major bugs I fixed was forgetting about cropping (which lead to very problematic
             images for the monastery.jpg), as well as confusing whether to maximize or minimize L2 and NCC scores.
         </p>
+        <br/>
         <p>
             Then, after that, I tried to use the naive method on the "melons.tif" image, trying to align that image. With a modest search window
             of [-15, 15] for both the height and width dimension, the code did not finish running even after 10 minutes, which made me realize
@@ -157,24 +162,33 @@
             I realized that the reason for such slow running times is due to how big the "melon.tif" image is, roughly 3000x3000, which is much
             bigger than the smaller images, only around 300x300.
         </p>
+        <br/>
         <p>
             Hence, I began to build my image pyramid approach. I created 2 arrays of images, where the first item in the array is the original image,
             and each following image is the previous image, scaled down by a factor of 2 on both the height and width axes. The last image is an image
             with height that is within 80 pixels.
         </p>
+        <br/>
         <p>
             Then, starting from the smallest scaling (i.e., the last two images from these two arrays), we do the single-scale approach, find the pixel
             shifting of the first image that leads to the best alignment using the approaches. Once this is done, we repeat this procedure with the
             second-smallest scaling. Only this time, we pre-shift these images with the shift produced by the first (smallest) scaling, multiplied by 2.
+            </p>
+        <br/>
+        <p>Now we calculate the shift again, adding this shift to the pre-shift, and multiply it by 2 again to get the new pre-shift, for the new pair of images. 
+             And, repeating this, we eventually get the desired shifting of the first image, as well as the final aligned color image. 
         </p>
+        <br/>
         <p>
             Major bugs I fixed here were:
         </p>
+        <br/>
         <ol>
             <li>Accidentally multiplying the final (correct) shift for the first image by 2, leading to a very misaligned image.</li>
             <li>Changing the alignment from the red image and green image aligned with the blue image, to the red image and blue image aligned with the green image.</li>
             <li>For `train` image, I had to increase the `search_window` from 3 to 4 in order to align the image properly.</li>
         </ol>
+        <br/>
         <p>
             Since the red and blue are the least aligned images, and the green image seems to be between them, by aligning relative to the green image,
             instead of the blue image, I was able to obtain much better results (especially for the "emir.tif" image).
@@ -183,15 +197,18 @@
 
     <div class="section">
         <h2>Bells And Whistles</h2>
+        <br/>
         <p>
             For this section, I implemented an automatic contrast scaling function, which automatically scales blue, green, and red images such that the maximum
             intensity is always 1.0 and the minimum intensity is always 0.0. I did this by subtracting the minimum intensity from the blue, green, and red images,
             and scaling the images such that the maximum intensity in all three of the blue, green, and red images are all equal to 1.0.
         </p>
+        <br/>
         <p>
             This helped, as it significantly increased the contrast of the images, making them brighter and more apparent. However, this effect doesn't seem to be that
             striking, or noticable in this case.
         </p>
+        <br/>
         <b> Here are some of the sample images. The left is with the automatic contrast scaling, and the right is without.</b>
         <div class="result-images">
             
