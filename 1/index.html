@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        h1, h2, h3 {
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+        }
+        img {
+            display: block;
+            margin: 20px auto;
+            max-width: 80%;
+        }
+        .author {
+            text-align: center;
+            font-size: 1.2em;
+            font-style: italic;
+            margin-bottom: 40px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .code {
+            background-color: #f4f4f4;
+            border-left: 4px solid #333;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+<body>
+    <h1>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</h1>
+    <div class="author">
+        Written by <strong>Aaron Zheng</strong>
+    </div>
+
+    <div class="section" id="overview">
+        <h2>Overview</h2>
+        <p>The goal of this project is to align images representing the blue, green, and red color channels into one image, and solve the problem of aligning these images in the most pleasing way for the viewer.</p>
+        <p>This project is very meaningful because it solves a very important problem from the past: the inability to take color pictures using regular cameras, instead only allowing black and white. About 100 years ago, a Russian color photography pioneer named Sergei Mikhailovich Prokudin-Gorskii solved this problem by taking 3 black and white images using a red, green, and blue filter respectively. He hoped to align these images using projectors installed with different color filters, but he wasn’t able to find a solution with the technology of his time.</p>
+        <p>Now, with my Computer Vision knowledge, I can assist Sergei in reconstructing his images through this project.</p>
+    </div>
+
+    <div class="section" id="first-attempts">
+        <h2>First Attempts</h2>
+        <p>In my first attempt, I created a very unaligned image, as I was simply reading the red, green, and blue intensities from the provided image and directly combining them.</p>
+        <img src="first_image.jpg" alt="First unaligned image">
+        <p>After that, I realized I had to perform simple scaling, and the main problem was solving the misalignment. I wrote a simple scaling function to align the smaller images.</p>
+        <p>I began by writing evaluation functions (NCC and L2) to measure the similarity of images as one image shifts along a search window. Major bugs I fixed included cropping issues and confusion about whether to maximize or minimize L2 and NCC scores.</p>
+        <p>Results for <code>monastery.jpg</code> and <code>melons.tif</code> are included below.</p>
+    </div>
+
+    <div class="section" id="intermediate-steps">
+        <h2>Intermediate Steps</h2>
+        <p>The slow run times were due to the size of the image <code>melon.tif</code> (around 3000x3000), compared to the smaller images (around 300x300). To solve this, I implemented an image pyramid approach.</p>
+        <p>I built arrays of scaled images, and starting from the smallest scale, I aligned each pair of images by progressively shifting and refining the alignment at each level. This gave me the final aligned color image.</p>
+        <p>Some major bugs I fixed included:</p>
+        <ul>
+            <li>Accidentally multiplying the final shift by 2, leading to misaligned images.</li>
+            <li>Switching to aligning red and blue images relative to the green image, resulting in much better results, especially for <code>emir.tif</code>.</li>
+        </ul>
+    </div>
+
+    <div class="section" id="bells-whistles">
+        <h2>Bells And Whistles</h2>
+        <p>I implemented an automatic contrast scaling function that adjusts the intensity of the blue, green, and red channels so that the maximum intensity is 1.0 and the minimum is 0.0. This was done by subtracting the minimum intensity and scaling the images accordingly.</p>
+    </div>
+
+    <div class="section" id="results">
+        <h2>Results</h2>
+        <p>Here are my final results:</p>
+        <img src="result_image1.jpg" alt="Final aligned image 1">
+        <img src="result_image2.jpg" alt="Final aligned image 2">
+    </div>
+</body>
+</html>
