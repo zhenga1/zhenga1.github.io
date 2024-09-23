@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 Project 1: Colorizing the Prokudin-Gorskii Collection</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Bookmark bar styling */
+        nav {
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: #f4f4f4;
+            padding-top: 20px;
+            border-right: 1px solid #ddd;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 10px 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px;
+            display: block;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #ddd;
+        }
+
+        /* Main content styling */
+        .content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+        }
+
+        p {
+            line-height: 1.6;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* Custom link for the table of contents/bookmarks */
+        .bookmark-link {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .bookmark-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Bookmark Navigation -->
+    <nav>
+        <ul>
+            <li><a href="#fun-with-filters-and-frequencies" class="bookmark-link">Fun with Filters and Frequencies</a></li>
+            <li><a href="#finite-difference-operators" class="bookmark-link">Finite Difference Operators</a></li>
+            <li><a href="#derivative-of-gaussian-dog-filters" class="bookmark-link">Derivative of Gaussian Filters</a></li>
+            <li><a href="#sharpening-an-image" class="bookmark-link">Sharpening an Image</a></li>
+            <li><a href="#hybrid-images" class="bookmark-link">Hybrid Images</a></li>
+            <li><a href="#fourier-transform" class="bookmark-link">Fourier Transform</a></li>
+            <li><a href="#gaussian-and-laplacian-stacks" class="bookmark-link">Gaussian and Laplacian Stacks</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1 id="fun-with-filters-and-frequencies">Fun With Filters and Frequencies</h1>
+        <h4 id="cs-180-project-2-fall-2024">CS 180 Project 2 Fall 2024</h4>
+
+        <h1 id="fun-with-filters">Fun with Filters</h1>
+        <h2 id="finite-difference-operators">Finite Difference Operators</h2>
+        <p>In this part, we need to try to find edges and gradients along the image that is provided to us, specifically the camera image. We will be using the finite difference filter, as shown below.</p>
+        <img src="media/difference_operations.png" alt="difference_matrix">
+        <p>Dx is responsible for subtracting adjacent columns, while Dy is responsible for subtracting adjacent rows. In this way, we can find gradients in the image by applying these filters, as these images will have high intensity at positions where the image changes magnitude very abruptly in <i>x</i> or <i>y</i>.</p>
+
+        <h2 id="derivative-of-gaussian-dog-filters">Derivative of Gaussian (DoG) Filters</h2>
+        <p>Since these images are rather noisy, we want to smooth the image with a Gaussian filter before convolution. This way, there will be less noise, as the Gaussian filter will remove the noise, which are typically very high frequency. So we apply the gaussian filter and then calculate the derivative through the derivative filters. This result is shown on the left.</p>
+
+        <h1 id="fun-with-frequencies">Fun with Frequencies</h1>
+        <h2 id="sharpening-an-image">Sharpening an Image</h2>
+        <h3 id="motivation">Motivation</h3>
+        <p>Sometimes in life, we may be limited by technologies or other factors out of our control, but we still want to make our images look sharper. How will we do that? In this section, I will try to tackle this problem.</p>
+
+        <h2 id="hybrid-images">Hybrid Images</h2>
+        <h3 id="approach">Approach</h3>
+        <p>Here, we want to generate images that look a certain way at a distance, but then a different way when seen close to our eyes.</p>
+    </div>
+</body>
+</html>

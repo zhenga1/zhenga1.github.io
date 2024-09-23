@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 Project 2: Fun with Filters and Frequencies</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+
+        /* Bookmark bar styling */
+        nav {
+            width: 200px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            background-color: #f4f4f4;
+            padding-top: 20px;
+            border-right: 1px solid #ddd;
+            font-size: 18px;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 10px 0;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #333;
+            padding: 10px;
+            display: block;
+            transition: background-color 0.3s, color 0.3s;
+            font-weight: 500;
+        }
+
+        nav ul li a:hover {
+            background-color: #ddd;
+            color: #2980b9;
+        }
+
+        /* Main content styling */
+        .content {
+            margin-left: 220px;
+            padding: 30px;
+            font-size: 20px;
+            line-height: 1.8;
+            background-color: #fff;
+            color: #333;
+        }
+
+        h1, h2, h3, h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 45px;
+            margin-top: 0;
+        }
+
+        h2 {
+            font-size: 32px;
+        }
+
+        h3 {
+            font-size: 28px;
+        }
+
+        h4 {
+            font-size: 24px;
+        }
+
+        p {
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Custom link for the table of contents/bookmarks */
+        .bookmark-link {
+            color: #2980b9;
+            text-decoration: none;
+        }
+
+        .bookmark-link:hover {
+            text-decoration: underline;
+        }
+        /* Styling for the table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        img {
+            width: 100%; /* Make images responsive */
+            /*max-width: 400px; Maximum image width */
+            height: auto;
+        }
+        /* Title styling */
+        .image-title {
+            font-size: 25px;
+            margin-top: 10px;
+        }
+    </style>
+
+    <!-- Google Fonts import for Roboto font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Bookmark Navigation -->
+    <nav>
+        <ul>
+            <li><a href="#fun-with-filters-and-frequencies" class="bookmark-link">Fun with Filters and Frequencies</a></li>
+            <li><a href="#finite-difference-operators" class="bookmark-link">Finite Difference Operators</a></li>
+            <li><a href="#derivative-of-gaussian-dog-filters" class="bookmark-link">Derivative of Gaussian Filters</a></li>
+            <li><a href="#sharpening-an-image" class="bookmark-link">Sharpening an Image</a></li>
+            <li><a href="#hybrid-images" class="bookmark-link">Hybrid Images</a></li>
+            <li><a href="#fourier-transform" class="bookmark-link">Fourier Transform</a></li>
+            <li><a href="#gaussian-and-laplacian-stacks" class="bookmark-link">Gaussian and Laplacian Stacks</a></li>
+            <li><a href="#multiresolution-blending" class="bookmark-link">Multiresolution Blending</a></li>
+            <li><a href="#reflection" class="bookmark-link">Reflection</a></li>
+        </ul>
+    </nav>
+    <div class="content">
+        <h1 style="text-align: center;" id="fun-with-filters-and-frequencies">Fun With Filters and Frequencies</h1>
+        <h4 style="text-align: center;" id="cs-180-project-2-fall-2024">CS 180 Project 2 Fall 2024</h4>
+        <h3 style="text-align: center;" id="cs-180-project-2-fall-2024">Aaron Zheng</h4>
+        <br/><br/>
+        <h1 id="fun-with-filters">Fun with Filters</h1>
+        <h2 id="finite-difference-operators">Finite Difference Operators</h2>
+        <p>In this part, we need to try to find edges and gradients along the image that is provided to us, specifically the camera image. We will be using the finite difference filter, as shown below.</p>
+        <img src="media/1.1/difference_operations.png" alt="difference_matrix">
+        <p>Dx is responsible for subtracting adjacent columns, while Dy is responsible for subtracting adjacent rows. In this way, we can find gradients in the image by applying these filters, as these images will have high intensity at positions where the image changes magnitude very abruptly in <i>x</i> or <i>y</i>.</p>
+        <p>The gradient magnitude is the square root of squares of the results of applying the filters (Dx, Dy) on the image. Using thresholding (ie, setting pixels below a certain threshold brightness value to zero), we can obtain a very clear contour / outline of the image, which is an edge image (tells us where the edges are).</p>
+        <h3 style="text-align: center;">Results</h3>
+        <table>
+            <tr>
+                <td><h2>Dx</h2></td>
+                <td><h2>Dy</h2></td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="media/1.1/conv_x_raw.jpg" alt="Image 5">
+                    <p class="image-title">X Derivative</p>
+                </td>
+                <td>
+                    <img src="media/1.1/conv_y_raw.jpg" alt="Image 6">
+                    <p class="image-title">Y Derivative</p>
+                </td>
+            </tr>
+            <tr></tr>
+                <td>
+                    <img src="media/1.1/conv_x_equalized.png" alt="Image 3">
+                    <p class="image-title">X Derivative Equalized</p>
+                </td>
+                <td>
+                    <img src="media/1.1/conv_y_equalized.png" alt="Image 4">
+                    <p class="image-title">Y Derivative Equalized</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="media/1.1/conv_x_baseline.png" alt="Image 1">
+                    <p class="image-title">X Baselined with Threshold</p>
+                </td>
+                <td>
+                    <img src="media/1.1/conv_y_baseline.png" alt="Image 2">
+                    <p class="image-title">Y Baselined with Threshold</p>
+                </td>
+            </tr>
+            
+        </table>
+        <h3 style="text-align: center;">Final Results</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/1.1/gradient_magnitude_eq.jpg" alt="Image 1">
+                    <p class="image-title">Equalized Gradient Magnitude Image</p>
+                </td>
+                <td>
+                    <img src="media/1.1/edge_map_thres.png" alt="Image 2">
+                    <p class="image-title">Threseholded Gradient Magnitude</p>
+                </td>
+            </tr>
+        </table>
+        <br/><br/>
+        
+        <h2 id="derivative-of-gaussian-dog-filters">Derivative of Gaussian (DoG) Filters</h2>
+        <p>Since these images are rather noisy, we want to smooth the image with a Gaussian filter before convolution. This way, there will be less noise, as the Gaussian filter will remove the noise, which are typically very high frequency. So we apply the gaussian filter and then calculate the derivative through the derivative filters. This result is shown below.</p>
+        <h3 style="text-align: center;">Results</h3>
+        
+        <table>
+            <tr>
+                <td><h2>Dx</h2></td>
+                <td><h2>Dy</h2></td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="media/1.2/conv_x_raw.jpg" alt="Image 5">
+                    <p class="image-title">X Derivative</p>
+                </td>
+                <td>
+                    <img src="media/1.2/conv_y_raw.jpg" alt="Image 6">
+                    <p class="image-title">Y Derivative</p>
+                </td>
+            </tr>
+            <tr></tr>
+                <td>
+                    <img src="media/1.2/conv_x_equalized.png" alt="Image 3">
+                    <p class="image-title">X Derivative Equalized</p>
+                </td>
+                <td>
+                    <img src="media/1.2/conv_y_equalized.png" alt="Image 4">
+                    <p class="image-title">Y Derivative Equalized</p>
+                </td>
+            </tr>
+            
+        </table>
+        <h3 style="text-align: center;">Final Results</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/1.2/gradient_magnitude_eq.jpg" alt="Image 1">
+                    <p class="image-title">Equalized Gradient Magnitude Image</p>
+                </td>
+                <td>
+                    <img src="media/1.2/edge_map_thres.png" alt="Image 2">
+                    <p class="image-title">Threseholded Gradient Magnitude</p>
+                </td>
+            </tr>
+        </table>
+        <p>Another way we could get the same (edge image) result, is by applying the derivative filter <b>directly</b> on the gaussian. This result is shown below.</p>
+        <h3 style="text-align: center;">Comparison between convolving twice and convolving once</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/1.2/edge_map_thres.png" alt="Image 1">
+                    <p class="image-title">Blurring then taking Derivative</p>
+                </td>
+                <td>
+                    <img src="media/1.2/edge_map_one_conv.png" alt="Image 2">
+                    <p class="image-title">Applying Derivative Kernel on Gaussian</p>
+                </td>
+            </tr>
+        </table>
+        <p>We see that, other than some very minor smoothening on the left edge of the cameraman (his back), there are no noticeaeble differences between the two images above. 
+            We can say that they are very similar, which is to be expected. However, the right image does appear more smooth, which may be a result of losing information
+            from the blurring process.
+        </p>
+        <br/><br/>
+        <h1 id="fun-with-frequencies">Fun with Frequencies</h1>
+        <h2 id="sharpening-an-image">Sharpening an Image</h2>
+        <h3 id="motivation">Motivation</h3>
+        <p>Sometimes in life, we may be limited by technologies or other factors out of our control, but we still want to make our images look sharper. How will we do that? In this section, I will try to tackle this problem. The way I will make images <em>look</em> sharper is by artificially scaling up the intensities of higher frequencies in the image, making them look more pronounced.</p>
+        <h3 id="approach">Approach</h3>
+        <p>I will use a low-pass filter to get a blurred version of the image. Then, I subtract the original image by the blurred version of the image to get the detail image, the image that contains high-frequencies in the original image. The result image is then created as the original image, added to the detail image multiplied by a certain <i>alpha</i>. 
+        In a sense, we are highlighting the stronger intensities of the image by a certain factor which is noted by <i>alpha</i> 
+        <br/>
+        Since images get darker as I overhighlight high frequencies and then normalize, I will display equalized images for all the results</p>
+        <h3 style="text-align: center;">Taj Mahal</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.1/taj_eq.jpg" alt="Image 5">
+                    <p class="image-title">Original Taj</p>
+                </td>
+                <td>
+                    <img src="media/2.1/taj_sharpened_alpha=1.jpg" alt="Image 6">
+                    <p class="image-title">Taj Sharpened, alpha=1</p>
+                </td>
+                <td>
+                    <img src="media/2.1/taj_sharpened_alpha=5.jpg" alt="Image 6">
+                    <p class="image-title">Taj Sharpened, alpha=5</p>
+                </td>
+            </tr>
+        </table>
+        <p>I found a nice image online with a cute dog, but it is blurry. So I tried to sharpen it. Here are my results. </p>
+        <h3 style="text-align: center;">Image of dog, sharpened and not sharpened</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.1/dog_eq.jpg" alt="Image 5">
+                    <p class="image-title">Original Dog</p>
+                </td>
+                <td>
+                    <img src="media/2.1/dog_detail_gk=3.jpg" alt="Image 6">
+                    <p class="image-title">High Frequencies of the Doggie</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="media/2.1/dog_sharpened_alpha=5_eq.jpg" alt="Image 5">
+                    <p class="image-title">Dog Sharpened, alpha=5</p>
+                </td>
+                <td>
+                    <img src="media/2.1/dog_sharpened_alpha=10_eq.jpg" alt="Image 6">
+                    <p class="image-title">Dog Sharpened, alpha=10</p>
+                </td>
+            </tr>
+        </table>
+        <p>We also can compare the results between the original version of images, and the images that are blurred then sharpened. </p>
+        <p>The doggo is much clearer now! Clearly from these results, we see that a higher alpha does indeed make the blurry image look (artificially) sharper. 
+            Now, I will try this for a image that is not blurry, and see how, by blurring it and sharpening from the blur, I can obtain a similar image.</p>
+        <p>Below is results for a tree image.</p>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.1/tree_orig.jpg" alt="Image 5">
+                    <p class="image-title">Original Tree</p>
+                </td>
+                <td>
+                    <img src="media/2.1/tree.jpg" alt="Image 6">
+                    <p class="image-title">Blurred Tree</p>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <img src="media/2.1/tree_sharpened_alpha=1_eq.jpg" alt="Image 5">
+                    <p class="image-title">Tree Sharpened, alpha=1</p>
+                </td>
+                <td>
+                    <img src="media/2.1/tree_sharpened_alpha=5_eq.jpg" alt="Image 6">
+                    <p class="image-title">Tree Sharpened, alpha=5</p>
+                </td>
+            </tr>
+        </table>
+        <p>From this, we see that the sharpening does indeed make the image much clearer, although it cannot replace or make up for lost information in the tree.</p>
+        <br/><br/>
+        <h2 id="hybrid-images">Hybrid Images</h2>
+        <h3 id="approach">Approach</h3>
+        <p>Here, we want to generate images that look a certain way at a distance, but then a different way when seen close to our eyes. To accomplish this effect, I took advantage of the principle that higher frequencies in an image are much more noticeable to the human eye than lower frequencies, but they are not noticeable at a distance (i.e. at lower resolutions). 
+            I used a low pass filter on the first image by convolving the <code>lo_image</code> with a gaussian that 
+            has <code>gaussian_kernel</code> as filter kernel size, and <code>sigma</code> as the standard deviation. 
+            Then I blurred the second image (<code>hi_image</code>) by applying convolution with the same convolution parameters, 
+            and subtracted the original image from the blurred image to get the high-passed image. Once this is done, 
+            I overlayed the low-pass image of <code>lo_image</code> and the high-pass image of <code>hi_image</code> to get the result.</p>
+            <h3 id="bells-and-whistles-">Bells and Whistles:</h3>
+        <p>For this part, I attempted to use equalization(balancing out the intensities) to make the images look better. After testing, I see that it looks much better with color on both images, 
+            than grayscale on one image vs color on the other. I also found it beneficial to reduce the intensities of colors on the low-passed image, relative to the high-passed image,
+            as the high-pass image tends to have lower color intensities, which doesn't really blend well with the low passed image. 
+        </p>
+        <p>Since coloured images looks much better than uncolored (gray) images, all the results below will be using coloured images (Equalized images)</p>
+        <h3 style="text-align: center;">Cat and Person</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.2/nutmeg_shrunk.jpg" alt="Image 5">
+                    <p class="image-title">Original Cat</p>
+                </td>
+                <td>
+                    <img src="media/2.2/DerekPicture_shrunk.jpg" alt="Image 6">
+                    <p class="image-title">Original Person</p>
+                </td>
+                <td>
+                    <img src="media/2.2/derek_cat.jpg" alt="Image 6">
+                    <p class="image-title">Result (after align + overlaying)</p>
+                </td>
+            </tr>
+        </table>
+        <p>Some other examples of images I tried are below.</p>
+        <h3 style="text-align: center;">Nezuko Kamado and Mitsuri Kanroji (demon slayer)</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.2/kanroji.png" alt="Image 5">
+                    <p class="image-title">Kanroji</p>
+                </td>
+                <td>
+                    <img src="media/2.2/nezuko.png" alt="Image 6">
+                    <p class="image-title">Nezuko</p>
+                </td>
+                <td>
+                    <img src="media/2.2/nezuko_kanroji.jpg" alt="Image 6">
+                    <p class="image-title">Result (after align + overlaying)</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Tanjiro Kamado and Giyu Tomioka (demon slayer)</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.2/Tanjiro.jpg" alt="Image 5">
+                    <p class="image-title">Tanjiro</p>
+                </td>
+                <td>
+                    <img src="media/2.2/Giyu.jpg" alt="Image 6">
+                    <p class="image-title">Giyu</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Result (after align + overlaying)</p>
+        <img src="media/2.2/tanjiro_giyu.jpg" alt="Image 6">
+        
+        <h3 style="text-align: center;">Ferrari and Lamborghini</h3>
+        <table>
+            <tr>
+                <td>
+                    <img src="media/2.2/ferrari.png" alt="Image 5">
+                    <p class="image-title">Ferrari</p>
+                </td>
+                <td>
+                    <img src="media/2.2/lambo.png" alt="Image 6">
+                    <p class="image-title">Lamborghini</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Result (after align + overlaying)</p>
+        <img src="media/2.2/ferrari_lambo.jpg" alt="Image 6">
+
+        <h3 id="fourier-transform">Fourier Transform</h3>
+        <p>By eye, I believe that the best results were the <b>Cat and Person</b>. The fourier transformed results are as follows:</p>
+        <h3 style="text-align: center;">Frequencies of Results</h3>
+        <table>
+            <tr>
+                <td >
+                    <img src="media/2.2/DerekPicture_freq.jpg" alt="Image 5">
+                    <p class="image-title">Original Person Frequencies</p>
+                </td>
+                <td >
+                    <img src="media/2.2/nutmeg_freq.jpg" alt="Image 6">
+                    <p class="image-title">Original Cat Frequencies</p>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 50%">
+                    <img src="media/2.2/high_pass_derek.jpg" alt="Image 5">
+                    <p class="image-title">High Pass Frequencies of Person</p>
+                </td>
+                <td style="width: 50%">
+                    <img src="media/2.2/low_pass_nutmeg.jpg" alt="Image 6">
+                    <p class="image-title">Low Pass Frequencies of Cat</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Result of the hybrid image</p>
+        <img src="media/2.2/hybrid_freq.jpg" alt="Image 6">
+
+        <br/><br/>
+        <h2 id="gaussian-and-laplacian-stacks">Gaussian and Laplacian Stacks</h2>
+        <h3 id="approach-">Approach:</h3>
+        <p>To create the Gaussian stack, we blur the input images sequentially, with each subsequent image being the blur applied on the previous image. 
+            To create the Laplacian stack, we subtract consecutive images in the Gaussian stack. 
+            For the final image in the Laplacian stack, we use the last (most blurred image) in the gaussian stack. 
+            Here are the results(normalized Laplace images) when applied on the apple and the orange images.</p>
+        <h3 style="text-align: center;">Apples</h3>
+        <p style="text-align: center;">First row: The gaussian stack</p>
+        <p style="text-align: center;">Second row: The normalized laplacian stack</p>
+        <p style="text-align: center;">Thrid row: The equalized gaussian stack</p>
+        <p style="text-align: center;">&rarr; Increasing in level</p>
+        <img src="media/2.3/apple_output.png" alt="Image 6">
+        <h3 style="text-align: center;">Oranges</h3>
+        <p style="text-align: center;">First row: The gaussian stack</p>
+        <p style="text-align: center;">Second row: The normalized laplacian stack</p>
+        <p style="text-align: center;">Thrid row: The equalized gaussian stack</p>
+        <p style="text-align: center;">&rarr; Increasing in level</p>
+        <img src="media/2.3/oranges_output.png" alt="Image 6">
+        <br/><br/>
+        <h2 id="multiresolution-blending">Multiresolution Blending</h2>
+        <h3 id="approach-">Approach:</h3>
+        <p>To generate hybrid images, we need two images of the same shape, as well as a mask matrix in the same shape, showing the boundaries between the two images. The mask matrix should have some pixels in some region at the brightest value, and others at the darkest value. </p>
+        <p>Then we generate Laplacian stacks for both input images, and generate a Gaussian stack for the mask matrix as well. Then, we pairwise multiply:</p>
+        
+        <p>1) Laplacian stack of image 1 with the Gaussian stack of the mask</p>
+        <p>2) Laplacian stack of image 2 with (1- Gaussian stack of the mask)</p>
+        <p>and sum the results together.</p>
+        
+        <p>Here are some of the results.</p>
+        <h3 style="text-align: center;">Apple and Orange</h3>
+        <table>
+            <tr>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/apple.jpeg" alt="Image 5">
+                    <p class="image-title">Original Apple</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/orange.jpeg" alt="Image 6">
+                    <p class="image-title">Original Orange</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/mask.png" alt="Image 6">
+                    <p class="image-title">Original Mask</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">The <b>Oraple</b></h3>
+        <img style="width:55%; display: block;margin-left: auto;margin-right: auto;"src="media/2.4/oraple.jpg" alt="Image 5">
+        <h3 style="text-align: center;">Einstein and Newton</h3>
+        <table>
+            <tr>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/einstein.jpg" alt="Image 5">
+                    <p class="image-title">Original Einstein</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/newton.jpg" alt="Image 6">
+                    <p class="image-title">Original Newton</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/mask.png" alt="Image 6">
+                    <p class="image-title">Original Mask</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">The <b>Einnewton</b></h3>
+        <img style="width:30%; display: block;margin-left: auto;margin-right: auto;"src="media/2.4/einstein_newton.png" alt="Image 5">
+
+        <h3 style="text-align: center;">Aaron and a Meteor</h3>
+        <table>
+            <tr>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/aaron.JPG" alt="Image 5">
+                    <p class="image-title">Original Aaron</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/meteor.jpg" alt="Image 6">
+                    <p class="image-title">Original Meteor</p>
+                </td>
+                <td style="width: 33.33%">
+                    <img src="media/2.4/meteor_mask.jpg" alt="Image 6">
+                    <p class="image-title">Custom Mask</p>
+                </td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Aaron and the Meteor</h3>
+        <img style="width:30%; display: block;margin-left: auto;margin-right: auto;"src="media/2.4/aaron_meteor.jpg" alt="Image 5">
+        <p>The <i>Aaron and the Meteor</i> image is a bit of a fail, since the image is blurry. I believe this has something to do with the 
+        difference in color hues of the two images.</p>
+        <p> Below are the laplacian stacks of the images above.</p>
+        <h3 style="text-align: center;">Laplacian Stacks of Images</h3>
+        <p  style="text-align: center;" class="image-title">Laplacian -  Aaron</p>
+        <img src="media/2.4/aaron_output.png" alt="Image 5">
+        <p  style="text-align: center;" class="image-title">Laplacian -  Meteor</p>
+        <img src="media/2.4/meteor_output.png" alt="Image 6">
+        <p  style="text-align: center;" class="image-title">Laplacian -  Einstein</p>
+        <img src="media/2.4/einstein_output.png" alt="Image 5">
+        <p  style="text-align: center;" class="image-title">Laplacian -  Newton</p>
+        <img src="media/2.4/newton_output.png" alt="Image 6">
+        <h2 id="reflection">Reflection</h2>
+        <p>This project was very challenging and fun, and I learnt a lot about how important frequencies are to images, and how manipulating them can change / alter
+            the ways in which an image looks. We can achieve so much through maniplating frequencies of an image, including combining images, sharpening them, and overlaying
+            them in a hybrid way. 
+        </p>
+    </div>
+
+</body>
