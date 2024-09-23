@@ -283,8 +283,8 @@
         <h3 id="approach">Approach</h3>
         <p>I will use a low-pass filter to get a blurred version of the image. Then, I subtract the original image by the blurred version of the image to get the detail image, the image that contains high-frequencies in the original image. The result image is then created as the original image, added to the detail image multiplied by a certain <i>alpha</i>. 
         In a sense, we are highlighting the stronger intensities of the image by a certain factor which is noted by <i>alpha</i> 
-        <br/>
-        Since images get darker as I overhighlight high frequencies and then normalize, I will display equalized images for all the results</p>
+        <br/><br/>
+        Since images get darker as I overhighlight high frequencies and then normalize, I will display equalized images for all the results shown below.</p>
         <h3 style="text-align: center;">Taj Mahal</h3>
         <table>
             <tr>
@@ -293,11 +293,11 @@
                     <p class="image-title">Original Taj</p>
                 </td>
                 <td>
-                    <img src="media/2.1/taj_sharpened_alpha=1.jpg" alt="Image 6">
+                    <img src="media/2.1/taj_sharpened_alpha=1_eq.jpg" alt="Image 6">
                     <p class="image-title">Taj Sharpened, alpha=1</p>
                 </td>
                 <td>
-                    <img src="media/2.1/taj_sharpened_alpha=5.jpg" alt="Image 6">
+                    <img src="media/2.1/taj_sharpened_alpha=5_eq.jpg" alt="Image 6">
                     <p class="image-title">Taj Sharpened, alpha=5</p>
                 </td>
             </tr>
@@ -473,13 +473,13 @@
         <h3 style="text-align: center;">Apples</h3>
         <p style="text-align: center;">First row: The gaussian stack</p>
         <p style="text-align: center;">Second row: The normalized laplacian stack</p>
-        <p style="text-align: center;">Thrid row: The equalized gaussian stack</p>
+        <p style="text-align: center;">Thrid row: The equalized laplacian stack</p>
         <p style="text-align: center;">&rarr; Increasing in level</p>
         <img src="media/2.3/apple_output.png" alt="Image 6">
         <h3 style="text-align: center;">Oranges</h3>
         <p style="text-align: center;">First row: The gaussian stack</p>
         <p style="text-align: center;">Second row: The normalized laplacian stack</p>
-        <p style="text-align: center;">Thrid row: The equalized gaussian stack</p>
+        <p style="text-align: center;">Thrid row: The equalized laplacian stack</p>
         <p style="text-align: center;">&rarr; Increasing in level</p>
         <img src="media/2.3/oranges_output.png" alt="Image 6">
         <br/><br/>
