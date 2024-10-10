@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Morphing - CS 180 Project 3</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            table-layout: fixed;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background-color: #fff8dc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        td {
+            text-align: center;
+            vertical-align: middle;
+            width: 50%;
+            padding: 20px;
+            border: 2px solid #ddd;
+        }
+
+        img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .shrunk {
+            width: 50%; 
+            display: block; 
+            margin: 0 auto; 
+        }
+
+        h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #0073e6;
+            font-weight: bold;
+        }
+
+        p {
+            font-size: 1.5em !important;
+            margin-top: 10px;
+            color: #4b0082;
+        }
+        td {
+            font-size: 1.5em !important;
+            margin-top: 10px;
+            color: #4b0082;
+        }
+
+        /* Add hover effects to the images */
+        img:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* Background gradient for table rows */
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:nth-child(odd) {
+            background: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Face Morphing Project</h1>
+    <h2>CS 180 Project 3 Fall 2024</h2>
+
+    <div class="section">
+        <h3>Part 1</h3>
+        <p>For this part, I basically used the labeling tools provided on the course website. The images for triangulation used by me were my own face and also the face of George Clooney. The results are shown below.</p>
+        <img src="delauney_triangulation.png" 
+    </div>
+
+    <div class="section">
+        <h3>Part 2: Midway Face</h3>
+        <p>The midway face was computed by first finding the locations of the corresponding (labelled) points on the averaged face. Then, we triangulate the new points on the averaged face, and we get a list of lists of 3 numbers, where each number is the index of the point in the original array of points. Each list of 3 numbers represents the points that make up the corresponding triangle.</p>
+        <p>Now, we iterate over every triangle in the averaged face, and find the equivalent triangle in the first and second image face. Solving a linear matrix equation, we then get the transformation required to transform the mean triangle into the first and second image face, thereby finding the corresponding pixel coordinates to the mean triangle on the first and second image. Those corresponding pixel coordinates are probably mostly floats, and not integers, which is why to get the pixel values, we must interpolate from the surrounding integer pixel coordinates. Once we get the desired pixel values from the first and second image face, we average them. Then, we repeat for each mean triangle (triangle in the mean face triangulation).</p>
+        <p>The result is shown below.</p>
+        <img class="shrunk" src="aaron_george.png" alt="Midway Face">
+    </div>
+
+    <div class="section">
+        <h3>Part 3: Morph Sequence</h3>
+        <p>The morph sequence is produced by editing the above feature slightly. Rather than simply averaging the desired pixel values from the first and second image face for each mean triangle, we perform a weighted average. We multiply a constant alpha between 0 and 1, and multiply the desired pixel values from the first image by alpha, and sum that with the product of (1-alpha) and the desired pixel values from the second image. To get the points on the mean image, we also perform a weighted average of the labelled points of the first and second images based on alpha.</p>
+        <p>Now, by varying alpha from 0 to 1, we get a morph sequence, which is shown below</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Me morphing into George Clooney</h3>
+                    <img src="Aaron_George_slow.gif" alt="Morphing Sequence - Me and George Clooney">
+                </td>
+                <td style="height:300px">
+                    <h3>Tanjiro Kamado morphing into Muzan Kibutsuji</h3>
+                    <img src="tanjiro_muzan_slower.gif" alt="Image 2">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Part 4: Mean Face on FEI Dataset</h3>
+        <p>For this part, we used the second dataset on the website, the FEI Face dataset. It consists of 200 samples, each sample having 2 images: one where the person is smiling and one where they are not. 
+            To find the mean face, we first find the averaged points out of all the faces in the class (smiling or not). 
+            Then, we take each triangle from the averaged points face and average all the desired pixel values from all the faces of the class. 
+            We loop through all the triangles in the mean face.</p>
+        <p>Here are the results for raw averaging on the smiling and frontal (not smiling) faces, respectively, without morphing:</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Smiling:</h3>
+                    <img src="b_averaged.png" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Not Smiling:</h3>
+                    <img src="a_averaged.png" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+        </table>
+        <p>Here are the results for averaging and then morphing on the smiling and frontal (not smiling) faces, respectively</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Smiling:</h3>
+                    <img src="smiling_averaged.png" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Not Smiling:</h3>
+                    <img src="frontal_averaged.png" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+        </table>
+
+        <p>Here are some examples of morphing(GIFs):</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Image of Smiling into Raw Average:</h3>
+                    <img src="smile_pic_into_average.gif" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Image of Smiling into Morphed Average:</h3>
+                    <img src="smile_pic_into_average_morph.gif" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+            <tr>
+                <td style="height:300px">
+                    <h3>Image of Front face into Raw Average:</h3>
+                    <img src="front_pic_into_average.gif" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Image of Front face into Morphed Average:</h3>
+                    <img src="front_pic_into_average_morph.gif" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+        </table>
+        <p>Here are some examples of morphing(superimposing the original image onto the shape of the mean face of the class):</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Image of Smiling (Original):</h3>
+                    <img src="smiling_original.png" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Image of Smiling into Morphed Average:</h3>
+                    <img src="smiling_morphed_into_average.png" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+            <tr>
+                <td style="height:300px">
+                    <h3>Image of Frontal (Original):</h3>
+                    <img src="original.png" alt="Averaged Smile (Raw)">
+                </td>
+                <td style="height:300px">
+                    <h3>Image of Frontal into Morphed Average:</h3>
+                    <img src="morphed.png" alt="Averaged Frontal (Raw)">
+                </td>
+            </tr>
+        </table>
+        
+        
+        <p>These are what the average faces look like:</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Smiling:</h3>
+                    <img src="smiling_averaged.png" alt="Average Smiling Face">
+                </td>
+                <td style="height:300px">
+                    <h3>Not Smiling:</h3>
+                    <img src="frontal_averaged.png" alt="Average Not Smiling Face">
+                </td>
+            </tr>
+        </table>
+        
+        <p>Here is my face warped into the average geometry of both classes, as well as the average geometry of both classes into my face.</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Aaron into Average Smiling:</h3>
+                    <img src="aaron_into_smiling.png" alt="Aaron Face into Average">
+                </td>
+                <td style="height:300px">
+                    <h3>Average Smiling into Aaron:</h3>
+                    <img src="average_smiling_to_aaron.png" alt="Average into Aaron Face">
+                </td>
+            </tr>
+            <tr>
+                <td style="height:300px">
+                    <h3>Aaron into Average Front:</h3>
+                    <img src="aaron_face_into_average_frontal.png" alt="Aaron Face into Average">
+                </td>
+                <td style="height:300px">
+                    <h3>Average Front into Aaron:</h3>
+                    <img src="average_not_smiling_to_aaron.png" alt="Average into Aaron Face">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Part 5: Caricature</h3>
+        <p>Here is a caricature of my face, obtained by extrapolating from the population mean of both the smile and the no smile class:</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Smiling:</h3>
+                    <img src="extrapolated_smiling.png" alt="Average Smiling Face">
+                </td>
+                <td style="height:300px">
+                    <h3>Not Smiling:</h3>
+                    <img src="extrapolated_no_smiling.png" alt="Average Not Smiling Face">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <h3>Bells and Whistles: Gender Change</h3>
+        <p>Changing the gender of Metallica's lead singer to the average female face for each different class, smiling and not smiling.
+             (I manually labelled the gender, i.e. classified each image as either a male or female).</p>
+        <table>
+            <tr>
+                <td style="height:300px">
+                    <h3>Smiling:</h3>
+                    <img src="hetfield_female_smiling.png" alt="Average Smiling Face">
+                </td>
+                <td style="height:300px">
+                    <h3>Not Smiling:</h3>
+                    <img src="hetfield_female_no_smiling.png" alt="Average Not Smiling Face">
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>
