@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Warping and Mosaicing (Part 1)</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h1 {
+            font-size: 2em;
+        }
+        h2 {
+            margin-top: 1.5em;
+            font-size: 1.5em;
+            color: #555;
+        }
+        p {
+            margin: 10px 0;
+            color: #666;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px 0;
+        }
+        .image-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        td {
+            width: 50%;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Image Warping and Mosaicing (Part 1)</h1>
+    <h3 style="text-align:center;"> Aaron Zheng</h3>
+    <h2>Overview</h2>
+    <p>In this project, we will be adding on to the image warping of the previous project, and we will be discovering how to put two images that are a perspective transform of each other together in such ways as to form a mosaic, or a panoramic view. First, we have to find the homography that best suits the two pairs of images, and then we will warp one image into the other's perspective, and combine them in intelligent ways.</p>
+
+    <h2>Shoot the Pictures</h2>
+    <p>For this project, I took many different pictures of places, including on the street next to my apartment, in Berkeley, and in tourist places. The 3 pairs of images that I will be showing are images that turned out pretty well. In the end of the page, I also include some pairs of images that did not turn out so well.</p>
+    
+    <table>
+        <tr>
+            <td><img src="image/image1a.jpg" alt="Image pair 1 - left"></td>
+            <td><img src="image/image1b.jpg" alt="Image pair 1 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image2a.jpg" alt="Image pair 2 - left"></td>
+            <td><img src="image/image2b.jpg" alt="Image pair 2 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image3a.jpg" alt="Image pair 3 - left"></td>
+            <td><img src="image/image3b.jpg" alt="Image pair 3 - right"></td>
+        </tr>
+    </table>
+
+    <h2>Recover Homographies</h2>
+    <p>For this step, I defined point correspondences between the pairs of perspective transformed images, and using these I was able to derive a solution for the homography. A big problem I faced here was the great inaccuracy of using a direct least squares solution... directly using least squares was very unstable and always had errors of high magnitude.</p>
+
+    <p>So instead, I solved the expression by summarizing each point correspondence into two linear equations, putting them as rows into a matrix A, and taking the SVD of A. Then, the least squares problem just becomes the smallest eigenvector of A.</p>
+
+    <p>The point correspondences are as follows:</p>
+
+    <table>
+        <tr>
+            <td><img src="image/image1a.jpg" alt="Image pair 1 - left"></td>
+            <td><img src="image/image1b.jpg" alt="Image pair 1 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image2a.jpg" alt="Image pair 2 - left"></td>
+            <td><img src="image/image2b.jpg" alt="Image pair 2 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image3a.jpg" alt="Image pair 3 - left"></td>
+            <td><img src="image/image3b.jpg" alt="Image pair 3 - right"></td>
+        </tr>
+    </table>
+
+    <h2>Warp the Images</h2>
+    <p>Here, I warped the images using the homographies defined above. It involved using the homography, expressed as a matrix, and multiply it by the image matrix. We define image A and image B, and one homography will convert image A to B. Likewise, the reverse homography will convert image B to A.</p>
+
+    <p>To make this work properly, I used the griddata function from scipy and took the coordinates of the corners of each image and applied it to the homography. This got me the "bounding shape" of the transformed image. Then, I create a new image frame which fits this "bounding shape", and transform the image into the shape. This way, no information is lost.</p>
+
+    <p>These are the image results:</p>
+
+    <table>
+        <tr>
+            <td><img src="image/image1a.jpg" alt="Image pair 1 - left"></td>
+            <td><img src="image/image1b.jpg" alt="Image pair 1 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image2a.jpg" alt="Image pair 2 - left"></td>
+            <td><img src="image/image2b.jpg" alt="Image pair 2 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image3a.jpg" alt="Image pair 3 - left"></td>
+            <td><img src="image/image3b.jpg" alt="Image pair 3 - right"></td>
+        </tr>
+    </table>
+
+    <h2>Image Rectification</h2>
+    <p>Image rectification (making perspective transformed rectangles look like regular rectangles using homographies) is an interesting use case of image warping. Here, I rectified some images:</p>
+
+    <table>
+        <tr>
+            <td><img src="image/image4a.jpg" alt="Before rectification"></td>
+            <td><img src="image/image4b.jpg" alt="After rectification"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image5a.jpg" alt="Before rectification"></td>
+            <td><img src="image/image5b.jpg" alt="After rectification"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image6a.jpg" alt="Before rectification"></td>
+            <td><img src="image/image6b.jpg" alt="After rectification"></td>
+        </tr>
+    </table>
+
+    <h2>Mosaic'ed Image</h2>
+    <p>To blend images, I left one image unwarped, and the other warped. Then I transformed either one or both of the warped and unwarped images, in such a way that they fit nicely together. Then I added the two images together.</p>
+
+    <p>Here are the results:</p>
+
+    <table>
+        <tr>
+            <td><img src="image/image1a.jpg" alt="Image pair 1 - left"></td>
+            <td><img src="image/image1b.jpg" alt="Image pair 1 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image2a.jpg" alt="Image pair 2 - left"></td>
+            <td><img src="image/image2b.jpg" alt="Image pair 2 - right"></td>
+        </tr>
+    </table>
+    
+    <table>
+        <tr>
+            <td><img src="image/image3a.jpg" alt="Image pair 3 - left"></td>
+            <td><img src="image/image3b.jpg" alt="Image pair 3 - right"></td>
+        </tr>
+    </table>
+
+    <h2>Failed Images</h2>
+
+    <table>
+        <tr>
+            <td><img src="image/image7a.jpg" alt="Failed Image 1"></td>
+            <td><img src="image/image7b.jpg" alt="Failed Image 2"></td>
+        </tr>
+    </table>
+
+</div>
+
+</body>
+</html>
