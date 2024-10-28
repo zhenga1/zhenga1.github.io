@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Stitching and Mosaicing (Full Project)</title>
+    <style>
+        /* General styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        /* Container styling */
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 30px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        /* Headings styling */
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        h2 {
+            margin-top: 30px;
+            font-size: 1.8em;
+            color: #34495e;
+        }
+        p {
+            margin: 10px 0;
+            color: #666;
+            line-height: 1.8;
+            font-size: large
+        }
+        /* Image styling */
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        /* Image section table */
+        table {
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        td {
+            width: 50%;
+            padding: 10px;
+        }
+        /* Navigation bar styling */
+        .navbar {
+            background-color: #2c3e50;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            text-align: center;
+            display: flex;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.2em;
+            margin: 0 15px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+        .navbar a:hover {
+            background-color: #34495e;
+            color: white;
+        }
+        .navbar {
+            scroll-behavior: smooth;
+        }
+        /* Scroll to section on hover */
+        a[href^="#"] {
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Button to go back to the top */
+        .back-to-top {
+            text-align: center;
+            margin-top: 40px;
+        }
+        .back-to-top a {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        .back-to-top a:hover {
+            background-color: #34495e;
+        }
+        /* Subtle border for better layout */
+        .container section {
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Bookmark bar (Navigation) -->
+<div class="navbar">
+    <a href="#overview">Overview</a>
+    <a href="#part-1">Part 1</a>
+    <a href="#shoot-pictures">Shoot the Pictures</a>
+    <a href="#recover-homographies">Recover Homographies</a>
+    <a href="#warp-images">Warp the Images</a>
+    <a href="#rectification">Image Rectification</a>
+    <a href="#mosaiced-image">Mosaic'ed Image</a>
+    <a href="#failed-images">Failed Images</a>
+    <a href="#part-2">Part 2</a>
+    <a href="#harris-interest-points">Harris Interest Points</a>
+    <a href="#anms">Adaptive Non-Maximal Suppression</a>
+    <a href="#feature-descriptor-extraction">Feature Descriptor Extraction</a>
+    <a href="#feature-matching">Feature Matching</a>
+    <a href="#ransac">RANSAC</a>
+    <a href="#final-results">Final Results</a>
+    <a href="#conclusion">Conclusion</a>
+</div>
+
+<!-- Main content -->
+<div class="container">
+    <section id="overview">
+        <h1>Auto-Stitching and Mosaicing</h1>
+        <p style="font-size:xx-large;text-align:center;">Aaron Zheng</p>
+        <h2>Overview</h2>
+        <p>In this project, we will be adding on to the image warping of the previous project, and we will be discovering how to put two images that are a perspective transform of each other together in such ways as to form a mosaic, or a panoramic view. First, we have to find the homography that best suits the two pairs of images, and then we will warp one image into the other's perspective, and combine them in intelligent ways.</p>
+    </section>
+
+    <section id="part-1">
+        <h2 style="text-align: center;">Part 1: Image stitching with (manual) correspondences</h2>
+    </section>
+
+    <section id="shoot-pictures">
+        <h2>Shoot the Pictures</h2>
+        <p>For this project, I took many different pictures of places, including on the street next to my apartment, in Berkeley, and in tourist places. The 3 pairs of images that I will be showing are images that turned out pretty well. In the end of the page, I also include some pairs of images that did not turn out so well.</p>
+        <p>The left image will be known as image A, and the right is image B.</p>
+        <table>
+            <tr>
+                <td><img src="image/image_pair2_A.jpg" alt="Image pair 1 - left"></td>
+                <td><img src="image/image_pair2_B.jpg" alt="Image pair 1 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/image_pair3_A.jpg" alt="Image pair 2 - left"></td>
+                <td><img src="image/image_pair3_B.jpg" alt="Image pair 2 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/image_pair4_A.jpeg" alt="Image pair 3 - left"></td>
+                <td><img src="image/image_pair4_B.jpeg" alt="Image pair 3 - right"></td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="recover-homographies">
+        <h2>Recover Homographies</h2>
+        <p>For this step, I defined point correspondences between the pairs of perspective transformed images, and using these I was able to derive a solution for the homography. A big problem I faced here was the great inaccuracy of using a direct least squares solution... directly using least squares was very unstable and always had errors of high magnitude.</p>
+        <p>So instead, I solved the expression by summarizing each point correspondence into two linear equations, putting them as rows into a matrix A, and taking the SVD of A. Then, the least squares problem just becomes the smallest eigenvector of A.</p>
+        <p>The left image is point correspondences on image A, and the right image is point correspondences on image B.</p>
+        <table>
+            <tr>
+                <td><img src="image/img_2_A.png" alt="Image pair 1 - left"></td>
+                <td><img src="image/img_2_B.png" alt="Image pair 1 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/img_3_A.png" alt="Image pair 2 - left"></td>
+                <td><img src="image/img_3_B.png" alt="Image pair 2 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/img_4_A.png" alt="Image pair 3 - left"></td>
+                <td><img src="image/img_4_B.png" alt="Image pair 3 - right"></td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="warp-images">
+        <h2>Warp the Images</h2>
+        <p>Here, I warped the images using the homographies defined above. It involved using the homography, expressed as a matrix, and multiply it by the image matrix. We define image A and image B, and one homography will convert image A to B. Likewise, the reverse homography will convert image B to A.</p>
+        <p>To make this work properly, I used the griddata function from scipy and took the coordinates of the corners of each image and applied it to the homography. This got me the "bounding shape" of the transformed image. Then, I create a new image frame which fits this "bounding shape", and transform the image into the shape. This way, no information is lost.</p>
+        <p>The left image is image A transformed into the perspective of image B, and the right image is vice versa.</p>
+        <table>
+            <tr>
+                <td><img src="image/img_2_AB.png" alt="Image pair 1 - left"></td>
+                <td><img src="image/img_2_BA.png" alt="Image pair 1 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/img_3_AB.png" alt="Image pair 2 - left"></td>
+                <td><img src="image/img_3_BA.png" alt="Image pair 2 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/img_4_AB.png" alt="Image pair 3 - left"></td>
+                <td><img src="image/img_4_BA.png" alt="Image pair 3 - right"></td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="rectification">
+        <h2>Image Rectification</h2>
+        <p>Image rectification (making perspective transformed rectangles look like regular rectangles using homographies) is an interesting use case of image warping. Here, I rectified some images:</p>
+        <h3 style="font-size: x-large;  text-align:center;">Rectification Building</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_building.png">
+        <h3 style="font-size: x-large; text-align:center;">Rectificied Result</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_building_result.png">
+        <h3 style="font-size: x-large; text-align:center;">Rectification Generic</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_generic.png">
+        <h3 style="font-size: x-large; text-align:center;">Rectificied Result</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_generic_result.png">
+        <h3 style="font-size: x-large; text-align:center;">Rectification (My Ipad)</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_ipad.png">
+        <h3 style="font-size: x-large; text-align:center;">Rectificied Result</h3>
+        <img style="display: block;
+            margin: auto;" src="image/rectification_ipad_result.png">
+    </section>
+
+    <section id="mosaiced-image">
+        <h2>Mosaic'ed Image</h2>
+        <p>To blend images, I left one image unwarped, and the other warped. Then I transformed either one or both of the warped and unwarped images, in such a way that they fit nicely together. Then I added the two images together.</p>
+        <table>
+            <tr>
+                <td><img src="image/mosaicing11.jpg" alt="Image pair 1 - left"></td>
+                <td><img src="image/mosaicing12.png" alt="Image pair 1 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/mosaicing21.png" alt="Image pair 2 - left"></td>
+                <td><img src="image/mosaicing22.png" alt="Image pair 2 - right"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="image/mosaicing31.png" alt="Image pair 3 - left"></td>
+                <td><img src="image/mosaicing32.png" alt="Image pair 3 - right"></td>
+            </tr>
+        </table>
+        <p>Using the alpha masks I created for both the warped and unwarped images, I was also able to do a laplacian blending of the two images, although this didn't turn out perfectly.</p>
+        <table>
+            <tr>
+                <td><img src="image/laplacian_image1.png" alt="Image pair 3 - left"></td>
+                <td><img src="image/laplacian_image2.png" alt="Image pair 3 - right"></td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="failed-images">
+        <h2>Failed Images</h2>
+        <p>Below is an example of a failed image pair. This is one of the first images I took. The reason the mosaic of this image failed is because the perspective transform angle is too great.
+        </p>
+        <p>Below are the original image A and B</p>
+        <table>
+            <tr>
+                <td><img src="image/img1.jpg" alt="Failed Image 1"></td>
+                <td><img src="image/img2.jpg" alt="Failed Image 2"></td>
+            </tr>
+        </table>
+        <p>Below is the attempted image warping of A and B</p>
+        <table>
+            <tr>
+                <td><img src="image/proj4original_warping.png" alt="Failed Image 1"></td>
+                <td><img src="image/project4_original_warping2.png" alt="Failed Image 2"></td>
+            </tr>
+        </table>
+        <p>Since the warping magnitude is so great, it is clear that this image pair cannot make a good mosaic.</p>
+    </section>
+
+    <section id="part-2">
+        <h2 style="text-align: center;">Part 2: Image stitching with (automatic) correspondences</h2>
+    </section>
+    <section id="harris-interest-points">
+        <h2>Harris Interest Point Detection</h2>
+        <p>Here, I used the provided code, specifically the `get_harris_corners` function, and used it to obtain a bunch of harris corners. The principle behind this is that the harris corners are points where the edges go in opposite directions, and there is significant change in pixel intensities in all directions.
+        . Each point in the image here has a designated `score`, determining its likelihood of being a corner.</p>
+        <p>Using the harris detection algorithm and the provided code, I was able to dot the corners on the images used in Part 1.</p>
+        <p>Below, we have the Harris corners image created with minimum distance 1, 5, and 10, for the three pairs of image. 
+            Each corner has the highest score in a radius of the minimum distance, either 1, 5, or 10.</p>
+        <h3 style="text-align: center;">Min dist = 1</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA/img1_Harris_corner_min_dist=1.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB/img1_Harris_corner_min_dist=1.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img2_Harris_corner_min_dist=1.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB/img2_Harris_corner_min_dist=1.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img3_Harris_corner_min_dist=1.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB/img3_Harris_corner_min_dist=1.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Min dist = 5</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA/img1_Harris_corner_min_dist=5.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB/img1_Harris_corner_min_dist=5.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img2_Harris_corner_min_dist=5.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB/img2_Harris_corner_min_dist=5.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img3_Harris_corner_min_dist=5.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB/img3_Harris_corner_min_dist=5.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">Min dist = 10</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA/img1_Harris_corner_min_dist=10.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB/img1_Harris_corner_min_dist=10.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img2_Harris_corner_min_dist=10.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB/img2_Harris_corner_min_dist=10.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA/img3_Harris_corner_min_dist=10.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB/img3_Harris_corner_min_dist=10.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+        <p>Below are some of the original images, along with their (normalized and equalized) 
+        corner density heat map (how likely they are to be corners)</p>
+        <table>
+            <tr>
+                <td><img src="resultsA/img1_original_image_corner_mapping.png" alt="Img1 vs  corner"></td>
+            </tr>
+            <tr>
+                <td><img src="resultsB/img2_original_image_corner_mapping.png" alt="Img2 vs  corner"></td>
+            </tr>
+        </table>
+    </section>
+    <section id="anms">
+        <h2>Adaptive Non-Maximal Suppression</h2>
+        <p>The idea here is that we will take each of the harris corners above, and using the points generated, we will rank the points by radius of greatest probability of being a corner, which is the radius of its coverage. 
+            The global maximum (i.e. the point which is the most likely to be a corner across all harris points) has a radius of infinity. The key caveat here is, we suppress the points under a certain threshold. We only reduce a corner point's 
+            radius of coverage (assuming this corner point has probability pc1) if there exists a corner point in a radius r with probability x, such that x * 0.9 > pc1. The 0.9 makes the results more versatile and dynamic to noise related flunctuations.
+            We then only take the (C) points with the maximum radius of coverage, where C is a varied parameter.
+        </p>
+        <p>Here are the relevant points (using mindist=5 for harris).</p>
+        <h3 style="text-align: center;">C = 50</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img1_Harris_corner_points=50.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img1_Harris_corner_points=50.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img2_Harris_corner_points=50.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img2_Harris_corner_points=50.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img3_Harris_corner_points=50.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img3_Harris_corner_points=50.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">C = 200</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img1_Harris_corner_points=200.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img1_Harris_corner_points=200.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img2_Harris_corner_points=200.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img2_Harris_corner_points=200.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img3_Harris_corner_points=200.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img3_Harris_corner_points=200.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+        <h3 style="text-align: center;">C = 300</h3>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img1_Harris_corner_points=300.png" alt="Harris img 1A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img1_Harris_corner_points=300.png" alt="Harris img 1B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img2_Harris_corner_points=300.png" alt="Harris img 2A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img2_Harris_corner_points=300.png" alt="Harris img 2B"></td>
+            </tr>
+        </table>
+        <table>
+            <tr>
+                <td><img src="resultsA_adaptive_sampling2/img3_Harris_corner_points=300.png" alt="Harris img 3A"></td>
+                <td><img src="resultsB_adaptive_sampling2/img3_Harris_corner_points=300.png" alt="Harris img 3B"></td>
+            </tr>
+        </table>
+    </section>
+    <section id="feature-descriptor-extraction">
+        <h2>Feature Descriptor Extraction</h2>
+        <p>Here, we get a 40x40 window around each of the points that we got from the Adaptive Non-Maximal Suppresesion step (we use the 300 point situation), and we condense this feature descriptor to an 8x8 grid. 
+            This 8x8 grid effectively gives (summarized) context around each image, allowing us to match relevant features. 
+        </p>
+        <p>We obviously will normalize each of the feature descriptors before using them, making the distribution a mean = 0 and std = 1 distribution.</p>
+        <p>Here are some examples of the features.</p>
+        <table>
+            <tr>
+                <td><img src="descriptors/example_descrptor1.png" alt="Descriptor img 1"></td>
+                <td><img src="descriptors/example_descrptor2.png" alt="Descriptor img 2"></td>
+                
+            </tr>
+            <tr>
+                <td><img src="descriptors/example_descrptor3.png" alt="Descriptor img 3"></td>
+                <td><img src="descriptors/example_descrptor4.png" alt="Descriptor img 4"></td>
+                
+            </tr>
+            <tr>
+                <td><img src="descriptors/des.png" alt="Descriptor img 3"></td>
+                <td><img src="descriptors/criptor.png" alt="Descriptor img 6"></td>
+            </tr>
+        </table>
+    </section>
+    <section id="feature-matching">
+        <h2>Feature Matching</h2>
+        <p> Using the graph provided in the provided paper, for thresholding ratio, we pick the point in which the probability density of the curves `correct match` and `incorrect match` line up (i.e. are equal to each other). 
+            This way, if the ratio is less, it is more likely correct. If more, then more likely the match is incorrect.</p>
+        <p>With this regiment, the final matching feature points are as follows:</p>
+        <table>
+            <tr>
+                <td><h2 style="text-align: center;">Image Pair 1</h2></td>
+            </tr>
+            <tr>
+                <td><img src="correspondences/image_pair1.png" alt="Image Pair 1"></td>
+            </tr>
+            <tr><td><h2 style="text-align: center;">Image Pair 2</h2></td></tr>
+            <tr>
+                
+                <td><img src="correspondences/image_pair2.png" alt="Image Pair 2"></td>
+            </tr>
+            <tr><td><h2 style="text-align: center;">Image Pair 3</h2></td></tr>
+            <tr>
+                
+                <td><img src="correspondences/image_pair3.png" alt="Image Pair 3"></td>
+            </tr>
+        </table>
+    </section>
+
+    <section id="ransac">
+        <h2>RANSAC</h2>
+        <p>Although the results after feature matching look very good, we see that it is still not good enough. There are still many point pairings that do not match, and had we used this point pairing for homography calculation, it would be disasterous.</p>
+        <p>With RANSAC, we loop through a set number of iterations (here I used 1000). Each iteration, we pick 4 point corresepondences, calculate a homograrphy from these 4 points, and then calculate the number of inliers, i.e. the number of corresponding points between the 
+            two images that are within a set distance tolerance after the calculated homography. After the 1000 iterations, we choose the homography and the corresponding set of inliers, with the greatest number of inliers.</p>
+        <p>Point correspondences are as follows, after RANSAC</p>
+        <table>
+            <tr>
+                <td><h2 style="text-align: center;">Image Pair 1</h2></td>
+            </tr>
+            <tr>
+                <td><img src="after_ransac/image_pair1.png" alt="Image Pair 1"></td>
+            </tr>
+            <tr><td><h2 style="text-align: center;">Image Pair 2</h2></td></tr>
+            <tr>
+                
+                <td><img src="after_ransac/image_pair2.png" alt="Image Pair 2"></td>
+            </tr>
+            <tr><td><h2 style="text-align: center;">Image Pair 3</h2></td></tr>
+            <tr>
+                
+                <td><img src="after_ransac/image_pair3_final.png" alt="Image Pair 3"></td>
+            </tr>
+        </table>
+    </section>
+    <section id="final-results">
+        <h2>Final Results</h2>
+        <p>Finally, with the automatically detected homography and corresponding points and using project 4a's mosaic'ing code, here are some results.</p>
+        <h2 style="text-align: center;">Good 'ish Results</h2>
+        <table>
+            <tr>
+                <td><h2 style="text-align: center;">Image Pair 1</h2></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair_1_AB.png" alt="Image Pair 1"></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair_1_BA.png" alt="Image Pair 1"></td>
+            </tr>
+            <tr><td><h2 style="text-align: center;">Image Pair 2</h2></td></tr>
+            <tr>
+                
+                <td><img src="final_panoramas_scaled/image_pair_2_AB.png" alt="Image Pair 2"></td>
+            </tr>
+            <tr>
+                
+                <td><img src="final_panoramas_scaled/image_pair_2_BA.png" alt="Image Pair 2"></td>
+            </tr>
+        </table>
+        <h2 style="text-align: center;">Failed Results</h2>
+        <table>
+            <tr>
+                <td><h2 style="text-align: center;">Image Pair 3</h2></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair_3_AB.png" alt="Image Pair 3"></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair_3_BA.png" alt="Image Pair 3"></td>
+            </tr>
+        </table>
+        <h2 style="text-align: center;">Failed Results (but slightly better)</h2>
+        <table>
+            <tr>
+                <td><h2 style="text-align: center;">Image Pair 3</h2></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair3_AB.png" alt="Image Pair 3"></td>
+            </tr>
+            <tr>
+                <td><img src="final_panoramas_scaled/image_pair3_BA.png" alt="Image Pair 3"></td>
+            </tr>
+        </table>
+        <p>Overall, we see that the automatic corespondence machine really really struggled to align the last image pair, no matter how many times I reran the RANSAC algorithm.
+            I believe this goes to show that automatic alignment algorithms are not completely robust, and can fail under certain circumstances. Here, I think the reason it 
+            failed is because of the nature of the image pair 3. It contains the flooring that is having many many corners, and the berkeley building it represents also is pretty standard in architecture
+            where there are many many possible corners. Each of these corners could look very alike. It is also very sensitive to perturbations, so an off-placed image is very obvious.
+        </p>
+    </section>
+
+    <section id="conclusion">
+        <h2>Conclusion</h2>
+        <p>This was a fun project, I very much enjoyed it. I learnt (and struggled) a lot, especially when it came to making the homography work, and combining the warped and unwarped images. 
+        </p>
+        <p>To my surprise, Part 2 was much more straightforward than Part 1, and took me way less time.</p>
+        <h2>Coolest thing learned</h2>
+        <p>I learnt that you can automatically mosaic images! This is very interesting to me: previously I thought the only way something of this sort could be accomplished was through fancy AI methods.
+            Now I have learned that you can do it automatically with (arguably very very intuitive) methods, that rely on minimums and maximums and are generally straightforward to implement.
+            I also learned about RANSAC, and I think it is a very cool concept. I really like the idea of getting some sort of trend from a dataset that may be very noisy, even though you don't know what that trend is.
+            I think it is kind of like unsupervised learning from machine learning, which I have always found very fascinating.
+        </p>
+    </section>
+    <!-- Back to top button -->
+    <div class="back-to-top">
+        <a href="#overview">Back to Top</a>
+    </div>
+</div>
+
+</body>
+</html>
