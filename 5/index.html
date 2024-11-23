@@ -88,14 +88,63 @@
             color: #555;
             margin-top: 40px;
         }
+        /* Sidebar styles */
+        #sidebar {
+            width: 15%; 
+            height: calc(100vh - 0px);
+            overflow-y: auto;
+            background-color: #f4f4f4;
+            position: sticky;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            position: fixed;
+        }
+        #sidebar h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        #toc a {
+            display: block;
+            margin: 10px 0;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            font-size: 14px;
+        }
+
+        #toc a.h3 {
+            margin-left: 20px;
+            background-color: #f1f1f1;
+        }
+
+        #toc a:hover {
+            background-color: #e9ecef;
+            color: #0056b3;
+        }
+        #content {
+            margin-left: 20%;
+            padding: 20px;
+            flex: 1;
+        }
     </style>
+    
 </head>
 <body>
     <header>
         <h1>Project 5: Diffusion Models </h1>
         <h3 style="color:white"> Written by Aaron Zheng</h3>
     </header>
-    <section>
+    <div id="sidebar">
+        <h2>Table of Contents</h2>
+        <div id="toc"></div>
+    </div>
+    <section id="content">
         <h2>Part A</h2>
         <h3>1.0</h3>
         <p>
@@ -443,6 +492,256 @@
             <img src="image_design/hatman_rocket_ship.png" alt="Iterative Denoising Equation">
             <p><em>Hat Man + Rocket ship</em></p>
         </div>
+        <h2>Part B</h2>
+        <p>Such cool results from Part A! However, in Part A, we have only been using other people's diffusion models? How do they work, and can we build our own diffusion model! In this section I will be building my own diffusion models, 
+            which will serve the noble purpose of denoising images, as well as generating them! What fun!
+        </p>
+        <h3>1</h3>
+        <h3>1.1</h3>
+        <p>To start off the second part of the project, we have to build a UNet, and this Unet should be shaped exactly how the one we used from Part A is shaped. It should have
+            same dimensions for input and output, and a hidden dimension within the UNet which contains a more compact representation of the information that is passed in the input. 
+            The reason for this compactness is that we hope the denoiser can get a sort of compact representation of core properties of the noised image from the information represented in the initial image. So, the part of the model 
+            from the input to this compact representation can be thought of as a projection of the (noisy) input image down to a compact representation, and the latter part (compact -> output), can be thought of as reconstruction of an 
+            image from the compact representation.
+        </p>
+        <p>The structure of the UNet Model is as follows:</p>
+        <div class="image-container">
+            <img src="image_design/unconditional_arch.png" alt="Unconditional Architecture">
+            <p><em>Architecture for basic UNet</em></p>
+        </div>
+        <p>Here is what each atomic model substructure represents:</p>
+        <div class="image-container">
+            <img src="image_design/atomic_ops_new.png" alt="Atomic Architecture">
+            <p><em>Atomic Architecture</em></p>
+        </div>
+        <p>Here, <b>D</b> consists of the hidden dimension, and the more compact representation is derived from the fact that the image is shrunk to a latent representation of 1x1 from 28x28. The size of D kind of determines
+        the number of nodes of information that we want to keep track of.</p>
+        <h3>1.2</h3>
+        <p>Here, our goal is to successfully implement a noising scheme for the clean image, which we import from <b>torchvision.datasets.MNIST</b>. Using our noising scheme, we then will have
+             data to train our denoiser. This data naturally will be (input, output) pairs of noised and clean versions of the same image</p>
+        <p>With this data, we define a hyperparameter sigma which is the fraction of noise we include in the image, acting as a coefficient of the standard gaussian noise.
+            We vary sigma (coefficient of Gaussian noise) from an array ranging from 0-1.
+        </p>
+        <p> Noised Images with respect to Sigma looks like this:</p>
+        <div class="image-container">
+            <img src="image_design/noised_images_over_sigma.png" alt="Atomic Architecture">
+            <p><em>Noised Images over Different Sigma</em></p>
+        </div>
+        <p>The loss we will optimize over is:</p>
+        <div class="equation">
+            \[
+            L = \mathbb{E}_{z, x} || D_{\theta} (z) -x||^2
+            \]
+        </div>
+        <p>where D_theta is the denoising model, and z is the noised image we will pass in as input.</p>
+        <h3>1.2.1</h3>
+        <p>Now we train the UNet model!</p>
+        <p>We train using the architecture described above! Here, we exclusively use images noised with sigma = 0.5. We use a batch size of 256, and an Adam optimizer system of 1e-4. Our hidden dimension of the UNet, D, we set it to be 128, 
+            allowing our diffusion model to capture ample features from the input image. 
+        </p>
+        <p>With the course staff's recommendation, we train the diffusion model over 5 epochs and plot the average loss over each step (i.e. each batch). Here is our Log Loss varied over the steps.</p>
+        <div class="image-container">
+            <img src="image_design/log_loss_base_unet.png" alt="Log Loss Base">
+            <p><em>Log Loss over Steps for Unconditional UNet</em></p>
+        </div>
+        <p>Below is the results of training over 1 epoch!</p>
+        <div class="image-container">
+            <img src="image_design/results_1_epochs.png" alt="Results 1 epoch">
+            <p><em>(Original, Noised, Denoised) images after 1 epoch of UNet Training</em></p>
+        </div>
+        <p>Below is the results of training over 5 epochs!</p>
+        <div class="image-container">
+            <img src="image_design/results_5_epochs.png" alt="Results 5 epoch">
+            <p><em>(Original, Noised, Denoised) images after 5 epoch of UNet Training</em></p>
+        </div>
+        <p>We see that the model at 5 epochs of training is clearly a bit better at denoising the test image, but the 1 epoch model performs very impressively already. </p>
+        <h3>1.2.2</h3>
+        <p>What if we passed in inputs with noise coefficients that it wasn't trained on? What if we change vary sigma to something it wasn't trained on? This section will explore that</p>
+        <p>We vary sigma over a diverse range of values between 0.0-1.0 to get the denoising results of our 5 epoch model.</p>
+        <p>Here are some results:</p>
+        <div class="image-container">
+            <img src="image_design/out_dist_5_1.png" alt="Out Dist 5 epoch">
+            <p><em>Out of distribution noised images denoised with 5 epoch of UNet Training</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/out_dist_5_2.png" alt="Out Dist 5 epoch">
+            <p><em>Out of distribution noised images denoised with 5 epoch of UNet Training</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/out_dist_5_3.png" alt="Out Dist 5 epoch">
+            <p><em>Out of distribution noised images denoised with 5 epoch of UNet Training</em></p>
+        </div>
+        <p>Pretty good results! We can compare with the results using 1 epoch of UNet Training</p>
+        <div class="image-container">
+            <img src="image_design/out_dist_1_1.png" alt="Out Dist 1 epoch">
+            <p><em>Out of distribution noised images denoised with 1 epoch of UNet Training</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/out_dist_1_2.png" alt="Out Dist 1 epoch">
+            <p><em>Out of distribution noised images denoised with 1 epoch of UNet Training</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/out_dist_1_3.png" alt="Out Dist 1 epoch">
+            <p><em>Out of distribution noised images denoised with 1 epoch of UNet Training</em></p>
+        </div>
+        <p>We see that it is clear that the 5 epoch model improved significantly from the 1 epoch model in terms of out of distribution noised test set images. </p>
+        <h3>2</h3>
+        <p>Now, we train an actual diffusion model. The difference here is that instead of directly predicting the denoised image, we want to predict the noise that was added
+            to the clean image during the generation of the noised image. We use this actual diffusion model, so we can mimick the iterative denoising process that we saw in Part A, 
+            for a simple dataset like MNIST.
+        </p>
+        <p>Mathematically, our loss function is now a L2 loss on the noise vector, rather than the resulting (clean) image vector, as follows:</p>
+        <div class="equation">
+            \[
+            L = \mathbb{E}_{\epsilon, x} || \epsilon_{\theta} (z) -\epsilon||^2
+
+            \]
+        </div>
+        <p>Where epsilon_theta is a UNet denoising model(the diffusion model). </p>
+        <p>Our eventual goal is to be able to sample z from pure noise, rather than just simply a noised MNIST image, and have the denoiser model work well anyway.</p>
+        <h3>2.1</h3>
+        <p>Our training procedure can be described as follows:</p>
+        <div class="image-container">
+            <img src="image_design/procedure_diffusion_model.png" alt="Diff Model Procedure">
+            <p><em>Diffusion model constants and training procedure</em></p>
+        </div>
+        <p>Our training algorithm can be described as follows:</p>
+        <div class="image-container">
+            <img src="image_design/algo_tcunet.png" alt="Alg time conditioned unet">
+            <p><em>Algorithm for training Time Conditioned UNet</em></p>
+        </div>
+        <p>We add time conditioning to the UNet, making it a time conditioned UNet. We do this through two pairs of a series of linear layers, which we call the FCBlock. 
+            This linear FCBlock takes in a constant (t) and outputs a tensor of shape (D, 1, 1) and (2D, 1, 1) respectively, which are added to the block in the UNet after the 
+            first Upblock (before concatenation) and also the Unflatten procedure (before concatenation). This is shown in the below diagram: 
+        </p>
+        <div class="image-container">
+            <img src="image_design/tc_unet_diagram.png" alt="Out Dist 1 epoch">
+            <p><em>Time Conditioned UNet Structural Diagram</em></p>
+        </div>
+        <p>We repeat the training loop for num_epochs=20 epochs, since predicting noise is a more difficult task than denoising. We use a hidden dimension of D=128, and an Adam Optimizer learning rate of 1e-3, with a learning rate scheduler of 
+            (0.1)^ (1.0/num_epochs). The scheduler will decrease the learning rate by the factor every epoch. Our batch_size = 128. 
+        </p>
+        <h3>2.2</h3>
+        <p>Our (log) training losses per step graph is as follows:</p>
+        <div class="image-container">
+            <img src="image_design/tc_unet_loss_graph.png" alt="Log Loss Base">
+            <p><em>Log Loss over Steps for Time Conditioned UNet</em></p>
+        </div>
+        <h3>2.3</h3>
+        <p>Now, using our time conditioned model, we can finally sample random noise, and watch as our model (iteratively) transforms the noise into nice images! The algorithm snapshot
+            I followed are as follows:
+        </p>
+        <div class="image-container">
+            <img src="image_design/algo2_t_only.png" alt="Tcond algo">
+            <p><em>Time Conditional Algorithm Snapshot</em></p>
+        </div>
+        <p>We compare the results for the model trained with 5 epochs and 20 epochs. Here are our sampling results:</p>
+        <div class="image-container">
+            <img src="image_design/5_epoch_tcmodel.png" alt="TCond sampling, 5 epoch">
+            <p><em>Time Conditional Algorithm Sampling results, 5 epochs</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/20_epoch_tcmodel.png" alt="TCond sampling, 20 epoch">
+            <p><em>Time Conditional Algorithm Sampling results, 20 epochs</em></p>
+        </div>
+        <p>(B&W) Gifs of the interpolation!</p>
+        <div class="image-container">
+            <img src="image_design/combined_grid.gif" alt="Interpolation Gif, noise to real">
+            <p><em>Denoising Gif, 40 images from noise to iteratively denoised image</em></p>
+        </div>
+        <h3>2.4</h3>
+        <p>Now, we would like to condition the output on the class. We would like to be able to force the model to output class-specific images for random noised input, depending
+            on a class parameter that we pass in. </p>
+        <p>The way we accomplish this is by adding two more FCBlocks, taking in one hot encoded inputs of shape (N, 10), since 10 is the number of classes of this MNIST dataset. 
+            The FCBlocks in this case will output, after executing its linear layers, output tensors of shape (N, D) and (2N, D), where D=hidden_dim. These output tensors will affect
+            the exact same components of the UNet; the result after the first UpBlock as well as the result after the Unflatten Block. The difference, however, is that the output of the FCBlocks
+            here will not be added to the components; it will instead serve as the coefficient of the original blocks, UpBlock and UnFlatten.
+        </p>
+        <p>We do not want the model to lose the ability to generate images without conditioning, however. My solution is then to pass in a one_hot encoding of all zeroes with a probability of 0.1, forcing the model
+            to learn to also be able to generate quality images even when no class conditioning information is provided.
+        </p>
+        <p>Training is very similar to time conditioned UNet training, with the exact hyperparameters. The only difference being the addition of the class labels of the MNIST dataset to the training.</p>
+        <p>Here is the training Algorithm Card:</p>
+        <div class="image-container">
+            <img src="image_design/algo3_time_class_condition.png" alt="Alg time + class conditioned unet">
+            <p><em>Algorithm for training Time and Class Conditioned UNet</em></p>
+        </div>
+        <p>After training, we get the following (Log) loss vs Steps Graph</p>
+        <div class="image-container">
+            <img src="image_design/time_classcond_tcmodel.png" alt="time+class condition loss">
+            <p><em>Time and Class Conditioned UNet (Log) loss vs Steps</em></p>
+        </div>
+        <h3>2.5</h3>
+        <p>Here our sampling procedure is very similar to the way we did it with time conditioned UNet. However, here we use classifier free guidance to get our final value for noise.
+
+        </p>
+        <div class="equation">
+            \[
+            \epsilon = \epsilon_u + \gamma (\epsilon_c - \epsilon_u)
+            \]
+        </div>
+        <p>With gamma equal to 5, and epsilon_u and epsilon_c being the unconditioned (c=0) and conditioned noises</p>
+        <p>Like in Part A of the project, we basically extrapolate the noise so that it is further away from the unconditioned noise by 5 times, along the line that connects
+            the conditional and unconditional noise vectors. 
+        </p>
+        <p>Our results for epoch=5 and epoch=20 are as follows:</p>
+        <div class="image-container">
+            <img src="image_design/time_classcond_5epochs.png" alt="time+class condition sampling 5 epoch">
+            <p><em>Time and Class Conditioned Sampling with the 5 epoch model</em></p>
+        </div>
+        <div class="image-container">
+            <img src="image_design/time_classcond_20epochs.png" alt="time+class condition sampling 20 epoch">
+            <p><em>Time and Class Conditioned Sampling with the 20 epoch model</em></p>
+        </div>
+        <p>(B&W) Gifs of the interpolation(Using the best, 20 epoch model)!</p>
+        <div class="image-container">
+            <img src="image_design/combined_grid_new2.gif" alt="Interpolation Gif, noise to real">
+            <p><em>Denoising Gif, 40 images from noise to iteratively denoised image, with class conditioning</em></p>
+        </div>
+        <h2>Reflection</h2>
+        <p>I really enjoyed this project. In fact, it was probably one of my most favourite projects so far! Free from the pain of having to debug too excessively (unlike Project 3 and 4, trying to align images 
+            well was a painstakingly time consuming task), this project
+        was the most fun project for me and I really really enjoyed the cool results it generated. </p> 
+        <p>The project taught me how important iteratively denoising is, and how powerful diffusion models can be when it comes to generating cool images. It also made me realize how 
+            difficult a task it is to accurately denoise images. I find the image infilling part to be the most interesting; I did not know that noising the campanile and having it generate high quality images
+            could produce such good, but otherwise seemingly random looking images. 
+        </p>
     </section>
+    <script>
+        // Generate Table of Contents
+        const toc = document.getElementById("toc");
+        const content = document.getElementById("content");
+        const headings = content.querySelectorAll("h2, h3");
+
+        headings.forEach((heading) => {
+            const link = document.createElement("a");
+            link.href = `#${heading.id || heading.textContent.trim().replace(/\s+/g, "-").toLowerCase()}`;
+            link.textContent = heading.textContent;
+            link.className = `heading-link ${heading.tagName.toLowerCase()}`;
+            heading.id = heading.id || heading.textContent.trim().replace(/\s+/g, "-").toLowerCase();
+            toc.appendChild(link);
+        });
+        // Adjust sidebar height dynamically based on header height
+        const sidebar = document.getElementById("sidebar");
+        const header = document.querySelector("header");
+
+        function adjustSidebarHeight() {
+            const headerHeight = header.offsetHeight;
+            sidebar.style.height = `calc(100vh - ${headerHeight}px)`;
+            sidebar.style.top = `${headerHeight}px`;
+        }
+
+        // Run on page load and on window resize
+        window.addEventListener("load", adjustSidebarHeight);
+        window.addEventListener("resize", adjustSidebarHeight);
+        window.addEventListener("scroll", () => {
+            if (window.scrollY >= header.offsetHeight) {
+                sidebar.style.top = "0";
+                sidebar.style.height = "100vh";
+            } else {
+                adjustSidebarHeight();
+            }
+        });
+    </script>
 </body>
 </html>
