@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS180 Final Project</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #e9f5e9;
+            color: #333;
+        }
+        header {
+            background-color: #11e11b;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
+        }
+        nav {
+            background: #1b5e20;
+            color: white;
+            padding: 0.5rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+            padding: 0.5rem 0;
+            
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            max-width: 80%;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            display: flex;
+        }
+        .content {
+            flex: 1;
+            padding-left: 20px;
+        }
+        .toc {
+            background: #c8e6c9;
+            padding: 1rem;
+            border-radius: 8px;
+            width: 250px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 1rem;
+            height: fit-content;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .toc h2 {
+            margin-top: 0;
+        }
+        .toc ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .toc li {
+            margin: 0.5rem 0;
+        }
+        .toc a {
+            text-decoration: none;
+            color: #2e7d32;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        h1, h2, h3 {
+            color: #000000;
+            margin-top: 1.5rem;
+        }
+        p {
+            margin-bottom: 1rem;
+        }
+        img {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        footer {
+            background: #1b5e20;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            font-size: 1rem;
+            text-align: left;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        table th, table td {
+            padding: 12px 15px;
+        }
+        table th {
+            background-color: #2e7d32;
+            color: white;
+            font-weight: bold;
+        }
+        table td {
+            background-color: #f9f9f9;
+        }
+        table tr:nth-child(even) td {
+            background-color: #f1f1f1;
+        }
+        table tr:hover td {
+            background-color: #d1f7d6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>CS180 Final Project</h1>
+        <h2>Aaron Zheng</h2>
+    </header>
+    <nav>
+        <a href="#intro">Introduction</a>
+        <a href="#part1">Part 1</a>
+        <a href="#part2">Part 2</a>
+        <a href="#bells">Bells & Whistles</a>
+        <a href="#reflection">Reflection</a>
+    </nav>
+    <div class="container">
+        <div class="toc">
+            <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#intro">Introduction</a></li>
+                <li><a href="#part1">Part 1: Fit a Neural Field to a 2D Image</a></li>
+                <li><a href="#part2">Part 2: Fit a Neural Radiance Field from Multi-view Images</a>
+                    <ul>
+                        <li><a href="#part2.1">Part 2.1: Create Rays from Cameras</a></li>
+                        <li><a href="#part2.2">Part 2.2: Sampling</a>
+                            <ul>
+                                <li><a href="#sampling-rays">Sampling Rays from Images</a></li>
+                                <li><a href="#sampling-points">Sampling Points along Rays</a></li>
+                            </ul>
+                        </li>
+                        <li><a href="#part2.3">Part 2.3: Putting the Dataloading All Together</a></li>
+                        <li><a href="#part2.4">Part 2.4: Neural Radiance Field</a></li>
+                        <li><a href="#part2.5">Part 2.5: Volume Rendering</a></li>
+                        <li><a href="#trainingeval">Training and Evaluation</a></li>
+                    </ul>
+                </li>
+                <li><a href="#bells">Bells & Whistles (Extra Credit)</a></li>
+                <li><a href="#reflection">Reflection</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <section id="intro">
+                <h2>Introduction</h2>
+                <p>In this project, we want to be able to reconstruct a scene viewed from any view direction and camera position, by building a 
+                    neural network representation of this 3D scene and training it with a subset of data consisting of a limited number of images. 
+                </p>
+            </section>
+            <section id="part1">
+                <h2>Part 1: Fit a Neural Field to a 2D Image</h2>
+                <p>Here, I mainly try to solidify my understanding by first building a Neural Field representation of a purely 2D scene, where we attempt to map (u, v) to 
+                    a rgb color (r, g, b), where (u, v) is simply the xy pixel coordinate. I created a Neural Network architecture as per the bottom image. 
+                </p>
+                <img src="images/mlp_architecture.jpg" alt="MLP Image">
+                <p>I assume that x is a batched tensor of shape (B, 2), a list of B coordinates in 2D space. For each coordinate value, I create its positional embedding, a vector
+                    of size 2*L + 1, as per the below image. I chose to use L=10, which provides significantly more information about the coordinate values, which helps our training.
+                After doing this for both coordinate values u and v, I concatenate, to create a resulting tensor of shape (B, 2(2*L +1)), the Positional Encoding (PE). </p>
+                <img src="images/pos_enc.png" alt="PE Image">
+                <p>Then, I pass this PE through a list of hidden layers with hidden dimension = 256, and after a final linear model, we end up with a vector of size 3, which we
+                    process with the sigmoid function to get the final RGB value. </p>
+                <p>To prevent memory errors, we do not predict every pixel value. Instead, we predict a randomly chosen subset of N pixels. To make the process simpler, I make a custom 
+                    Dataloader which can load both the (x,y) coordinates and their rgb colors of N pixels randomly. To make the input and outputs in the range of [0,1] (to make training more stable), 
+                    we normalize both the (x,y) and rgb values in the Dataloader. 
+                </p>
+                <p>The hyperparameters we tested are as follows:</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hyperparameters</th>
+                            <th>L</th>
+                            <th>no_hidden</th>
+                            <th>Lr</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>h1</td>
+                            <td>10</td>
+                            <td>3</td>
+                            <td>1e-2</td>
+                        </tr>
+                        <tr>
+                            <td>h2</td>
+                            <td>20</td>
+                            <td>3</td>
+                            <td>1e-3</td>
+                        </tr>
+                        <tr>
+                            <td>h3</td>
+                            <td>10</td>
+                            <td>5</td>
+                            <td>1e-3</td>
+                        </tr>
+                        <tr>
+                            <td>h4</td>
+                            <td>20</td>
+                            <td>5</td>
+                            <td>1e-2</td>
+                        </tr>
+                        <tr>
+                            <td>h5</td>
+                            <td>10</td>
+                            <td>2</td>
+                            <td>1e-3</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>We see that hyperparameter 3 performs the best in terms of PSNR score, getting a score of 26.95 for PSNR. For this best result, we plot the results!</p>
+                <b>The fox image is as below:</b>
+                <p>The iterations 1, 2, 3 correspond to training at [400, 800, ..., 2400] iterations</p>
+                <img src="images/fox_image.png" alt="Fox Images">
+                <b>The PSNE score across iterations</b>
+                <img src="images/PSNR_training_iteration_fox.png" alt="Fox PSNE">
+                <b>The MSE Loss across iterations</b>
+                <img src="images/MSE_training_loss_iterations.png" alt="Fox MSE">
+                <p>Using the best model trained with best hyperparameters, we plot the reconstruction results on a different image!</p>
+                <img src="images/jenga_puzzle_reconstructed.png" alt="Jenga">
+                <p>Original Image</p>
+                <img src="images/jenga_image.jpg" alt="Jenga Original">
+                <p>Reconstructed Final Image</p>
+                <img src="images/jenga_reconstructed.png" alt="Jenga Original">
+            </section>
+
+            <section id="part2">
+                <h2>Part 2: Fit a Neural Radiance Field from Multi-view Images</h2>
+                <section id="part2.1">
+                    <h3>Part 2.1: Create Rays from Cameras</h3>
+                    <p>Here, I implemented three functions, <b><i>pixel_to_camera</i></b>, <b><i>transform</i></b> and <b><i>pixel_to_ray</i></b>. </p>
+                       <p> The first one is responsible for taking
+                    a camera coordinate (u,v) and returning the global coordinates (x, y, z), given the camera's intrinsic matrix as well as a scaling factor. </p>
+                    <p> The second one is responsible for taking a camera to world transformation matrix (given as a specification of the camera, an input variable), 
+                        and using it to generate the world coordinate.  </p>
+                    <p>The third one calculates a ray origin and a ray direction given the K intrinsic matrix for the camera, camera to world transformation matrices, 
+                        and the 2d coordinates (u,v) of a pixel from the camera. 
+                    </p>
+                    <p>For convenience of training, all inputs are assumed to be batched. The images are assumed to be passed in with shape (B, H, W, C), B=batch, C=channel. The uv's are passed in also as 
+                        shape (B,H,W,3), where uv[..., 0] is the batch, uv[..., 1] is the y axis values, and uv[..., 2] is the x axis values. With this way, we can parallelize all operations using torch tensor processing approaches.
+    
+                    </p>
+                </section>
+                <section id="part2.2">
+                    <h3>Part 2.2: Sampling</h3>
+                    <section id="sampling-rays">
+                        <h4>Sampling Rays from Images</h4>
+                        <p>Using the batching approach described above, I first create uv as a meshgrid of all the possible pixel coordinates and batch size positions. Then I invoke the pixel to ray method directly with my batched inputs, and the constant K
+                            matrix, as well as the camera to world matrices. 
+                        </p>
+                        <p>For the sampling strategy, I chose to flatten all the images first, then randomly select pixels from the flattened pixels of the image. With these pixels, I pass them 
+                            directly into pixel_to_ray, to get the desired r_0 and r_d which define a ray.
+                        </p>
+                        
+                    </section>
+                    <section id="sampling-points">
+                        <h4>Sampling Points along Rays</h4>
+                        <p>Here, we make a new function, <i>sample_along_rays</i> which takes each ray origin and direction and outputs a bunch of points, defined by the value of n_samples. 
+                            These points are sampled uniformly from near=2.0 and far=6.0 units away from ray origin, in the direction of the ray direction. Given the batched scenario, the new points sampled
+                        will be of shape (n_samples*B, H, W, C). </p>
+                    </section>
+                </section>
+                <section id="part2.3">
+                    <h3>Part 2.3: Putting the Dataloading All Together</h3>
+                    <p>With the above functions already defined, the implementation of the Dataloader is complicated but straightforward. We create a tensor that contains every possible uv coordinates and batch.
+                        Then we use this uv and the c2w_train and pass it into the pixel_to_ray method to get the resulting r_0, r_d vectors. We also flatten the target list of images, to get image_flatten. Then, for the sample_rays method, we simply get random indices, and sample our r_0, r_d and image_flatten vectors
+                        to return the corresponding set of rays origins, directions and pixel values. 
+                    </p>
+                    <b>Here is the visualization of the lego scene, with the train images, on viser:</b>
+                    <img src="images/nerf_results.png" alt="NERF result">
+                    <b>Here is the visualization of one image in the scene, with color labeled on the points, on viser:</b>
+                    <img src="images/single_image_sampling.png" alt="NERF result single img">
+                </section>
+                <section id="part2.4">
+                    <h3>Part 2.4: Neural Radiance Field</h3>
+                    <p>Here at this step, I am finally ready to start building the architecture of the model that will be used to predict the 3D scene! Let us first clarify some specifications.</p>
+                    <p>For the input, we want the model to be able to take in a 3d pixel coordinate, as well as a ray direction. This effectively defines both a position and an angle of view, which is 
+                        enough information. It should be trained, given these values, to predict the color at this specific pixel coordinate, as well as the optical density of this point. </p>
+                    <b>The model follows the following architecture:</b>
+                    <img src="images/model_nerf_arch.png" alt="NERF model Architecture">
+                    <p>The biggest problem here to solve, unsurprisingly, is also the batched inputs problem. The pixel values passed in is going to be of shape (B, N, 3), 
+                        since for every ray direction we sample N=n_samples points along that ray direction. So I had to adapt my Positional Encoding code such that it can deal with 
+                    "doubly-batched" inputs. What worked was, instead of iterating over the last dimension of the input, I iterated over the encoding dimension L and created a list of the PE encodings 
+                    for every iteration. Then I used torch.cat on dim=-1 and combined these tensors into one tensor, of shape (B, N, PE_dim). This way, the method works <i>regardless</i> of the number of dimensions of the input.
+                The number of dimensions of the input also, very surprising for me, doesn't change the dimension of the encoding.</p>
+                    <p>Many of the concatenations required some intricate tensor manipulations. For example, the ray Positional Encoding and the pixels concatenation involved having to repeat the ray PE to create a new tensor of 
+                        a compatible shape with the pixel Tensor. 
+                    </p>
+                </section>
+                <section id="part2.5">
+                    <h3>Part 2.5: Volume Rendering</h3>
+                    <p>This function, volrend, that I implemented, takes in the density, step_size and pixel values of a point along some ray direction (in order), and returns the rendered color at the pixel point, 
+                        when seen along the direction of the ray direction. The idea is that, given a list of optical densities passed in (as sigma) where each one corresponds to progressively further sample locations 
+                        , there is some probability of the ray having terminated at the i'th step_size spatial interval, meaning that light coming from spaces in front of the i'th spatial interval are invisible. 
+                    </p>
+                    <p>To get the returned color, we use the below equation, carefully summing up each step_size segment's contribution to the color. The discrete and continous version of the volume rendering equation are below. </p>
+                    <b>Discrete Approximation:</b>
+                    <img src="images/discrete_volrend.png" alt="Discrete Volume Rendering">
+                    <b>Continuous Integral:</b>
+                    <img src="images/cont_volrend_eqn.png" alt="Continuous volume rendering">
+                </section>
+                <section id="trainingeval">
+                    <h3>Training and Evaluation:</h3>
+                    <p>I first trained the model on 1000 iterations, with lr=1e-3. This took about ~15 minutes and obtained > 23 PSNR. The results obtained are shown below:</p>
+                    <b>PSNR Curve for Final NERF model at 1000 iterations</b>
+                    <img src="images/psnr_final_nerf.png" alt="PSNR Curve for final nerf">
+                    <b>MSE Curve for Final NERF model at 1000 iterations</b>
+                    <img src="images/mse_curve_finanl_ner.png" alt="MSE Curve for final nerf">
+                    <b>Images taken at model training iterations 0, 50, 100, 500, 1000</b>
+                    <img src="images/iter_lego_eval_result.png" alt="Iterations">
+                    <p>We can now finally generate a gif of the image with unseen camera positions represented by novel camera to world matrices. Here is one example of 
+                        an interpolation gif, containing many previously unseen scenes. I interpolate using the c2w_test matrix as well as image_data from the training  </p>
+                    <img style="width:30%" src="images/animated_nerf_faster.gif" alt="Animated NERF">
+                    <p>Then I finished off the training and had it train for about 1-2 hours more, achieving 5000 epochs, with the same learning rate. This increased model performance 
+                        to 26.29 PSNR for approximating the 3D scene. Here are some of the results with this new model.
+                    </p>
+                    <b>PSNR Curve for Final NERF model at 5000 iteration</b>
+                    <img src="images/psnr_5000.png" alt="PSNR 5000">
+                    <b>MSE Curve for Final NERF model at 5000 iterations</b>
+                    <img src="images/mse_5000.png" alt="MSE Curve for final nerf">
+                    <b>Images taken at model training iteration 5000</b>
+                    <img src="images/best_image_5000_iter.png" alt="Iterations 5000">
+                    <b>Interpolation Gif of the Lego Scene using Training Data at 5000 iterations</b>
+                    <img style="width:30%" src="images/animated_nerf_best.gif" alt="Animated NERF Best">
+                </section>
+            </section>
+
+            <section id="bells">
+                <h2>Bells & Whistles (Extra Credit)</h2>
+                <p>For my bells and whistles, I attempted to add background color as an option, a customly changeable parameter, so the volumetric rendering doesn't render black all the time as backgrounnd.
+                </p>
+                <p>To solve this problem, I realised that I had to channge certain things in the volumetric rendering function, specifically the color that it returns. I realized that the deltas * sigmas represented the 
+                    parameter that tells you how likely the point is to be not transparent. So I thought I could inverse that to get the transparency of that point. To get the transparency of each ray, I 
+                took the delta * sigma expression and calculated the negative exponent of the expression summed along the ray's points, to get a tensor representing the calculated metric of transparency along every ray. 
+            Then I multiplied this metric of transparency directly by the resulting background color. How transparent the ray is represents the degree to which the background color should contribute to the final color.
+            Finally, I added this multiplication result with the rendered color to get the new final rendered color, which I return. 
+             </p>
+             <b>Interpolation gif with a green background and 1000 iterations:</b>
+             <img style="width:30%" src="images/animated_nerf_green_1000.gif" alt="Animated GIF 1000">
+             <p>Now, with the 5000 iteration model. There seems to be some smoothing issues in terms of color blending between the foreground and background when I try with the most advanced model.
+                This may be because the 3D model is outputting more continous light fields with more fine-tuned gradients.  </p>
+             <b>Interpolation gif with a red background and 5000 iterations:</b>
+             <img style="width:30%" src="images/animated_nerf_best_red.gif" alt="Green interpolation, 5000 iterations">
+             <b>Interpolation gif with a green background and 5000 iterations:</b>
+             <img style="width:30%" src="images/animated_nerf_best_green.gif" alt="Green interpolation, 5000 iterations">
+            </section>
+            <section id="reflection">
+                <h2>Reflection</h2>
+                <p>There was a lot of debugging errors to get the batching process working. I first wrote code for no batching, assuming 
+                    <b>uv</b> is a matrix of shape <b>(N, 2)</b>. Then I had to change it to support batched inputs. Batched multiplication was very difficult to implement, because I realized after a long time, that I first had to flatten the <b>uv</b> Tensor, which is of shape
+                    <b>(B, H, W, C)</b>,  B=batch, C=channel, to <b>(B, H*W, C)</b>, before doing batched multiplication.
+                    In the end, rays_o, and rays_d are all of the shape <b>(B, H, W, 3)</b>, <b>(B, H, W, 3)</b>. </p>
+                <p>Overall, this was a very difficult project, but I felt I learnt a lot. I really struggled on converting my functions into a suitable format so they could be batched effectively.</p>
+            </section>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 CS180 Final Project</p>
+    </footer>
+</body>
+</html>
+s
